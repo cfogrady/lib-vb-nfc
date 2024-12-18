@@ -6,7 +6,7 @@ import java.util.Base64
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-abstract class VBNfcHandler(private val secrets: Secrets, protected val nfcData: NfcA) {
+abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: NfcA) {
     abstract fun readHeader()
     abstract fun sendCharacter()
     abstract fun getDeviceId(): Int
@@ -72,9 +72,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, protected val nfcData:
 
     @OptIn(ExperimentalStdlibApi::class)
     fun passwordAuth(inputData: ByteArray) {
-        Log.i(TAG, "inputData: ${inputData.toHexString()}")
         val password = createPassword(inputData)
-        Log.i(TAG, "Password ${password.toHexString()}")
         try {
             val result = nfcData.transceive(byteArrayOf(NFC_PASSWORD_COMMAND, password[0], password[1], password[2], password[3]))
             Log.i(TAG, "PasswordAuth Result: ${result.toHexString()}")
@@ -91,7 +89,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, protected val nfcData:
     // applying a 4-bit substitution cypher on the result, and hashing again with the second key.
     // The password are the 4 bytes starting at index 28 of that result.
     @OptIn(ExperimentalStdlibApi::class)
-    private fun createPassword(inputData: ByteArray): ByteArray {
+    internal fun createPassword(inputData: ByteArray): ByteArray {
         val key1 = encodeBase64Url(secrets.secretKey1)
         val key2 = encodeBase64Url(secrets.secretKey2)
         val mac = Mac.getInstance(HMAC256)
@@ -100,7 +98,6 @@ abstract class VBNfcHandler(private val secrets: Secrets, protected val nfcData:
         var substitutedBytes = apply4BitSubstitutionCypher(macResult)
         mac.init(SecretKeySpec(key2.toByteArray(), HMAC256))
         macResult = mac.doFinal(substitutedBytes)
-        Log.i(TAG, "Final Hash: ${macResult.toHexString()}")
         return macResult.sliceArray(28..<32)
     }
 
@@ -113,7 +110,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, protected val nfcData:
             for (fourBitShifts in 0..<2) { // perform one OR without shift, and one OR shifted 4 bits
                 val shift = fourBitShifts * 4
                 val permutationIndex = (byte shr shift) and 0xF
-                newByte = (newByte or (secrets.substitutionCypher[permutationIndex]) shl shift )
+                newByte = newByte or (secrets.substitutionCypher[permutationIndex] shl shift)
             }
             result[idx] = newByte.toByte()
         }
