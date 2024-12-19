@@ -3,17 +3,18 @@ package com.github.cfogrady.vbnfc.handlers
 import android.nfc.NfcAdapter
 import android.nfc.tech.NfcA
 import android.util.Log
+import com.github.cfogrady.vbnfc.NfcCharacter
+import java.lang.IllegalStateException
 import java.nio.charset.StandardCharsets
-import java.util.Arrays
 import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.Mac
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.experimental.xor
 
 abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: NfcA) {
     abstract fun readHeader()
-    abstract fun sendCharacter()
     abstract fun getDeviceId(): Int
 
     companion object {
@@ -44,13 +45,14 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
 
         passwordAuth()
         Log.i(TAG, "Reading Character")
-        readCharacter()
+        val characterData = readCharacter()
+        validateCharacterData(characterData)
         Log.i(TAG, "Signaling operation complete")
         nfcData.transceive(getOperationCommandBytes(OPERATION_TRANSFERRED_TO_APP))
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    private fun readCharacter() {
+    private fun readCharacter(): ByteArray {
         val result = ByteArray(((LAST_DATA_PAGE+4)- START_DATA_PAGE) * 4)
         for (page in START_DATA_PAGE..LAST_DATA_PAGE step 4) {
             val pages = nfcData.transceive(byteArrayOf(NFC_READ_COMMAND, page.toByte()))
@@ -59,8 +61,14 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
             }
             System.arraycopy(pages, 0, result, (page - START_DATA_PAGE)*4, pages.size)
         }
-        val resultsAsHex = result.toHexString()
-        Log.i(TAG, "Results: $resultsAsHex")
+        return result
+    }
+
+    fun prepareDIMForCharacter(dimId: UShort) {
+
+    }
+
+    fun sendCharacter(character: NfcCharacter) {
 
     }
 
@@ -98,16 +106,12 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
     // The password are the 4 bytes starting at index 28 of that result.
     @OptIn(ExperimentalStdlibApi::class)
     internal fun createPassword(inputData: ByteArray): ByteArray {
-        val key1 = decodeBase64AndDecrypt(secrets.passwordKey1)
-        val key2 = decodeBase64AndDecrypt(secrets.passwordKey2)
-        Log.i(TAG, "key1: $key1; key2: $key2")
-        val mac = Mac.getInstance(HMAC256)
-        mac.init(SecretKeySpec(key1.toByteArray(), HMAC256))
-        var macResult = mac.doFinal(inputData)
-        var substitutedBytes = apply4BitSubstitutionCypher(macResult)
-        mac.init(SecretKeySpec(key2.toByteArray(), HMAC256))
-        macResult = mac.doFinal(substitutedBytes)
-        return macResult.sliceArray(28..<32)
+        val salt1 = decodeBase64AndDecrypt(secrets.passwordKey1)
+        val salt2 = decodeBase64AndDecrypt(secrets.passwordKey2)
+        val hashedInput = generateHMacSHA256Hash(salt1, inputData)
+        val substitutedBytes = apply4BitSubstitutionCypher(hashedInput)
+        val secondHash = generateHMacSHA256Hash(salt2, substitutedBytes)
+        return secondHash.sliceArray(28..<32)
     }
 
     private fun decodeBase64AndDecrypt(str: String): String {
@@ -141,6 +145,68 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
             result[idx] = newByte.toByte()
         }
         return result
+    }
+
+    internal fun decryptData(data: ByteArray, tagId: ByteArray): ByteArray {
+        val salt1 = decodeBase64AndDecrypt(secrets.passwordKey1)
+        val salt2 = decodeBase64AndDecrypt(secrets.passwordKey2)
+        return cryptoTransformation(Cipher.DECRYPT_MODE, data, tagId, salt1, salt2)
+    }
+
+    val pagesWithChecksum = hashSetOf(8, 16, 32, 40, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 104, 192, 200, 208, 216)
+
+    @OptIn(ExperimentalStdlibApi::class)
+    internal fun validateCharacterData(data: ByteArray) {
+        // loop through all data
+        for(i in data.indices step 16) {
+            val page = i/4 + 8 // first 8 pages are header data and not part of the character data
+            if (pagesWithChecksum.contains(page)) {
+                var sum = 0
+                val checksumIndex = i + 15
+                for(j in i..<checksumIndex) {
+                    sum += data[j]
+                }
+                val checksumByte = (sum and 0xff).toByte()
+                if (checksumByte != data[checksumIndex]) {
+                    throw IllegalStateException("Checksum ${checksumByte.toHexString()} doesn't match expected ${data[checksumIndex].toHexString()}")
+                }
+            }
+        }
+    }
+
+    // Hashes the tagId once and applies substitution cipher. Then hashes again.
+    // Splits hash and original tagId into key and initialization vector
+    private fun cryptoTransformation(cipherMode: Int, data: ByteArray, tagId: ByteArray, salt1: String, salt2: String): ByteArray {
+        var hashedTagId = apply4BitSubstitutionCypher(generateHMacSHA256Hash(salt1, tagId))
+        hashedTagId = generateHMacSHA256Hash(salt2, hashedTagId) // second hash
+
+        // generate actual key and initializing vector from tagIdGeneratedKey
+        val iv1 = ByteArray(15)
+        hashedTagId.copyInto(iv1, 0, 24, 32)
+        tagId.copyInto(iv1, 8, 0, 7)
+        val iv2 = hashedTagId.copyOf(15)
+        val ivParameterSpec = IvParameterSpec(xorBytes(iv1, iv2, 16))
+        val secretKeySpec = SecretKeySpec(hashedTagId.copyOf(16), "AES")
+        val cipher = Cipher.getInstance("AES/CTR/NoPadding")
+        cipher.init(cipherMode, secretKeySpec, ivParameterSpec)
+        return cipher.doFinal(data)
+    }
+
+    private fun generateHMacSHA256Hash(salt: String, data: ByteArray): ByteArray {
+        val saltBytes = salt.toByteArray(StandardCharsets.US_ASCII)
+        val secretKeySpec = SecretKeySpec(saltBytes, "HMacSHA256")
+        val mac = Mac.getInstance("HMacSHA256")
+        mac.init(secretKeySpec)
+        return mac.doFinal(data)
+    }
+
+    private fun xorBytes(data1: ByteArray, data2: ByteArray, resultSize: Int): ByteArray {
+        val results = ByteArray(resultSize)
+        results.fill(0)
+        for (i in data1.indices) {
+            results[i] = data1[i] xor data2[i]
+        }
+        return results
     }
 
     class AuthenticationException(message: String): Exception(message)

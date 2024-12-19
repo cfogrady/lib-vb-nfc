@@ -24,10 +24,6 @@ class OriginalVBNfcHandler(secrets: Secrets, nfcData: NfcA, val vbCompatibleTagI
         TODO("Not yet implemented")
     }
 
-    override fun sendCharacter() {
-        TODO("Not yet implemented")
-    }
-
     override fun getDeviceId(): Int {
         return DEVICE_ID.toInt()
     }
