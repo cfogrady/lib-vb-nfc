@@ -39,18 +39,8 @@ import kotlinx.coroutines.coroutineScope
 class MainActivity : ComponentActivity() {
 
     private lateinit var nfcAdapter: NfcAdapter
-    private var vbNfcHandlerFactory: VBNfcHandlerFactory
-    private var secrets: VBNfcHandler.Secrets
-
-    init {
-        secrets = VBNfcHandler.Secrets(
-            passwordKey1 = getString(R.string.password_key_1),
-            passwordKey2 = getString(R.string.password_key_2),
-            decryptionKey = getString(R.string.decryption_key),
-            substitutionCypher = resources.getIntArray(R.array.substitution_cypher)
-        )
-        vbNfcHandlerFactory = VBNfcHandlerFactory(secrets, secrets, secrets)
-    }
+    private lateinit var secrets: VBNfcHandler.Secrets
+    private lateinit var vbNfcHandlerFactory: VBNfcHandlerFactory
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onNewIntent(intent: Intent?) {
@@ -69,6 +59,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        secrets = VBNfcHandler.Secrets(
+            passwordKey1 = resources.getString(R.string.password1),
+            passwordKey2 = resources.getString(R.string.password2),
+            decryptionKey = resources.getString(R.string.decryptionKey),
+            substitutionCypher = resources.getIntArray(R.array.substitutionArray)
+        )
+        vbNfcHandlerFactory = VBNfcHandlerFactory(secrets, secrets, secrets)
+
         val maybeNfcAdapter = NfcAdapter.getDefaultAdapter(this)
         if (maybeNfcAdapter == null) {
             Toast.makeText(this, "No NFC on device!", Toast.LENGTH_SHORT).show()
