@@ -1,11 +1,16 @@
 package com.github.cfogrady.vbnfc
 
+import android.app.PendingIntent
 import android.content.Intent
+import android.content.IntentFilter
 import android.nfc.NfcAdapter
 import android.nfc.Tag
+import android.nfc.tech.MifareClassic
+import android.nfc.tech.MifareUltralight
 import android.nfc.tech.NfcA
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,6 +32,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.github.cfogrady.vbnfc.handlers.VBNfcHandler
 import com.github.cfogrady.vbnfc.handlers.VBNfcHandlerFactory
 import com.github.cfogrady.vbnfc.ui.theme.LibVbNfcExampleTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+
 
 class MainActivity : ComponentActivity() {
 
@@ -35,8 +43,23 @@ class MainActivity : ComponentActivity() {
     private var secrets: VBNfcHandler.Secrets
 
     init {
-        secrets = VBNfcHandler.Secrets("", "", intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)) // Not Real Keys or cypher.
+        secrets = VBNfcHandler.Secrets("", "", "", intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)) // Not Real Keys or cypher.
         vbNfcHandlerFactory = VBNfcHandlerFactory(secrets, secrets, secrets)
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun onNewIntent(intent: Intent?) {
+        Log.i("MainActivity", "Intent: ${intent?.action}")
+        super.onNewIntent(intent)
+        if(NfcAdapter.ACTION_TAG_DISCOVERED == intent?.action) {
+            Log.i("MainActivity", "Tag Id Discovered: ${
+                intent.getByteArrayExtra(NfcAdapter.EXTRA_ID)?.toHexString()}")
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,8 +72,9 @@ class MainActivity : ComponentActivity() {
         }
         nfcAdapter = maybeNfcAdapter
         setContent {
-            var secret1 by remember { mutableStateOf(secrets.secretKey1) }
-            var secret2 by remember { mutableStateOf(secrets.secretKey2) }
+            var passwordKey1 by remember { mutableStateOf(secrets.passwordKey1) }
+            var passwordKey2 by remember { mutableStateOf(secrets.passwordKey2) }
+            var decryptionKey by remember { mutableStateOf(secrets.decryptionKey) }
             LibVbNfcExampleTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -59,19 +83,25 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Column {
                         Row {
-                            Text(text = "Secret Key 1")
-                            TextField(value = secret1, onValueChange = {
-                                secret1 = it
+                            Text(text = "Password Key 1")
+                            TextField(value = passwordKey1, onValueChange = {
+                                passwordKey1 = it
                             })
                         }
                         Row {
-                            Text(text = "Secret Key 2")
-                            TextField(value = secret2, onValueChange = {
-                                secret2 = it
+                            Text(text = "Password Key 2")
+                            TextField(value = passwordKey2, onValueChange = {
+                                passwordKey2 = it
+                            })
+                        }
+                        Row {
+                            Text(text = "Decryption Key")
+                            TextField(value = decryptionKey, onValueChange = {
+                                decryptionKey = it
                             })
                         }
                         Button(onClick = {
-                            secrets = VBNfcHandler.Secrets(secret1, secret2, secrets.substitutionCypher)
+                            secrets = VBNfcHandler.Secrets(passwordKey1, passwordKey2, decryptionKey, secrets.substitutionCypher)
                             vbNfcHandlerFactory = VBNfcHandlerFactory(secrets, secrets, secrets)
                         }) {
                             Text(text = "Regenerate NFC Handler From Keys")
@@ -102,7 +132,9 @@ class MainActivity : ComponentActivity() {
         nfcData.use {
             val handler = vbNfcHandlerFactory.getHandler(nfcData)
             handler.receiveCharacter()
-            Toast.makeText(this, "Done Reading Character", Toast.LENGTH_SHORT).show()
+            runOnUiThread {
+                Toast.makeText(this, "Done Reading Character", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -114,8 +146,26 @@ class MainActivity : ComponentActivity() {
             // Work around for some broken Nfc firmware implementations that poll the card too fast
             options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 250)
             nfcAdapter.enableReaderMode(this, this::onReadCharacterTag, NfcAdapter.FLAG_READER_NFC_A or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
-                Bundle()
+                options
             )
+//            val pendingIntent = PendingIntent.getActivity(
+//                this, 0, Intent(
+//                    this,
+//                    javaClass
+//                ).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_MUTABLE
+//            )
+//            val intentFilter = IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED)
+//            nfcAdapter.enableForegroundDispatch(this, pendingIntent, arrayOf(intentFilter), arrayOf(
+//                arrayOf(NfcA::class.java.name, MifareClassic::class.java.name, MifareUltralight::class.java.name)
+//            ))
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (nfcAdapter.isEnabled) {
+            // nfcAdapter.disableForegroundDispatch(this)
+            nfcAdapter.disableReaderMode(this)
         }
     }
 }

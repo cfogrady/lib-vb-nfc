@@ -1,9 +1,14 @@
 package com.github.cfogrady.vbnfc.handlers
 
+import android.nfc.NfcAdapter
 import android.nfc.tech.NfcA
 import android.util.Log
+import java.nio.charset.StandardCharsets
+import java.util.Arrays
 import java.util.Base64
+import javax.crypto.Cipher
 import javax.crypto.Mac
+import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: NfcA) {
@@ -36,7 +41,8 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
         Log.i(TAG, "Writing to make ready for operation")
         nfcData.transceive(getOperationCommandBytes(OPERATION_READY))
         Log.i(TAG, "Authenticating")
-        passwordAuth(nfcData.tag.id)
+
+        passwordAuth()
         Log.i(TAG, "Reading Character")
         readCharacter()
         Log.i(TAG, "Signaling operation complete")
@@ -68,11 +74,14 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
 
     data class VBNfcHeader(val magic: UInt, val itemId: UShort, val itemNumber: UShort)
 
-    data class Secrets(val secretKey1: String, val secretKey2: String, val substitutionCypher: IntArray)
+    data class Secrets(val passwordKey1: String, val passwordKey2: String, val decryptionKey: String, val substitutionCypher: IntArray)
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun passwordAuth(inputData: ByteArray) {
-        val password = createPassword(inputData)
+    fun passwordAuth() {
+        NfcAdapter.EXTRA_ID
+        var tagId = nfcData.tag.id
+        Log.i(TAG, "TagId: ${tagId.toHexString()}")
+        val password = createPassword(tagId)
         try {
             val result = nfcData.transceive(byteArrayOf(NFC_PASSWORD_COMMAND, password[0], password[1], password[2], password[3]))
             Log.i(TAG, "PasswordAuth Result: ${result.toHexString()}")
@@ -81,7 +90,6 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
             }
         } catch (e: Exception) {
             Log.e(TAG, "Exception: ${e.message}")
-            throw e
         }
     }
 
@@ -90,8 +98,9 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
     // The password are the 4 bytes starting at index 28 of that result.
     @OptIn(ExperimentalStdlibApi::class)
     internal fun createPassword(inputData: ByteArray): ByteArray {
-        val key1 = encodeBase64Url(secrets.secretKey1)
-        val key2 = encodeBase64Url(secrets.secretKey2)
+        val key1 = decodeBase64AndDecrypt(secrets.passwordKey1)
+        val key2 = decodeBase64AndDecrypt(secrets.passwordKey2)
+        Log.i(TAG, "key1: $key1; key2: $key2")
         val mac = Mac.getInstance(HMAC256)
         mac.init(SecretKeySpec(key1.toByteArray(), HMAC256))
         var macResult = mac.doFinal(inputData)
@@ -99,6 +108,23 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
         mac.init(SecretKeySpec(key2.toByteArray(), HMAC256))
         macResult = mac.doFinal(substitutedBytes)
         return macResult.sliceArray(28..<32)
+    }
+
+    private fun decodeBase64AndDecrypt(str: String): String {
+        val decoded = Base64.getDecoder().decode(str)
+        val decrypt = decrypt(secrets.decryptionKey, decoded)
+        return String(decrypt, StandardCharsets.UTF_8)
+    }
+
+    private fun decrypt(key: String, data: ByteArray): ByteArray {
+        val keyBytes = key.toByteArray(StandardCharsets.UTF_8)
+        val rightSizedKey = keyBytes.copyOf(32)
+        val ivBytes = keyBytes.copyOfRange(key.length - 16, key.length)
+        val secretKeySpec = SecretKeySpec(rightSizedKey, "AES")
+        val ivParameterSpec = IvParameterSpec(ivBytes)
+        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec)
+        return cipher.doFinal(data)
     }
 
     // This is a 4 bit substitution cypher, where each 4 bits act as an index to another 4 bits
