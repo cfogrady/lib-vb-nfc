@@ -43,7 +43,12 @@ class MainActivity : ComponentActivity() {
     private var secrets: VBNfcHandler.Secrets
 
     init {
-        secrets = VBNfcHandler.Secrets("", "", "", intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)) // Not Real Keys or cypher.
+        secrets = VBNfcHandler.Secrets(
+            passwordKey1 = getString(R.string.password_key_1),
+            passwordKey2 = getString(R.string.password_key_2),
+            decryptionKey = getString(R.string.decryption_key),
+            substitutionCypher = resources.getIntArray(R.array.substitution_cypher)
+        )
         vbNfcHandlerFactory = VBNfcHandlerFactory(secrets, secrets, secrets)
     }
 
