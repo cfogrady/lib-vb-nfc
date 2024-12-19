@@ -3,6 +3,19 @@ Android Library And Demo App for VB NFC Communication
 
 This library aims to make NFC communication with the Vital Bracelet family of products accessible if users have the correct keys.
 
+# Optional Setup
+Create a keys.xml file inside lib-vb-nfc/res/values/keys.xml with the following:
+```
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="password1"></string>
+    <string name="password2"></string>
+    <string name="decryptionKey"></string>
+    <integer-array name="substitutionArray">0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15</integer-array>
+</resources>
+```
+This allows using the same key during development without re-typing them into the phone everytime. This key file should never be added to the repo because to work it must contain Bandai copyright data. It is currently in the `.gitignore`
+
 # Composition
 ## app
 This is a simple app demonstrating how the library can be used.
