@@ -3,8 +3,13 @@ Android Library And Demo App for VB NFC Communication
 
 This library aims to make NFC communication with the Vital Bracelet family of products accessible if users have the correct keys.
 
-# Optional Setup
-Create a keys.xml file inside lib-vb-nfc/res/values/keys.xml with the following:
+# Required Setup
+This project uses secret keys and ciphers. The user/developer is responsible for identifying those
+secrets. They are collected in single locations in this project. The files discussed here are in
+`.gitignore` so as to not be accidentally checked in.
+
+## App
+Create a `keys.xml` file inside `lib-vb-nfc/res/values/keys.xml` with the following:
 ```
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
@@ -31,7 +36,14 @@ Create a keys.xml file inside lib-vb-nfc/res/values/keys.xml with the following:
     </integer-array>
 </resources>
 ```
-This allows using the same key during development without re-typing them into the phone everytime. This key file should never be added to the repo because to work it must contain Bandai copyright data. It is currently in the `.gitignore`
+The values should be replaced by correct secrets on your local file.
+
+## vb-nfc-reader
+Create `Secret.kt` in `src\test\java\com\github\cfogrady\vbnfc`. This file should have the following variables defined:
+```
+val VBBESecrets = VBNfcHandler.Secrets("key1", "key2", "decryptionKey", intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15))
+```
+The values should be replaced by secrets corresponding to the VBBE on your local file.
 
 # Composition
 ## app
