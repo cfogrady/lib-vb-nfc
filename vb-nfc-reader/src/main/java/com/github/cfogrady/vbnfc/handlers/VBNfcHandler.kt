@@ -194,7 +194,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
         return cryptoTransformation(Cipher.DECRYPT_MODE, data, tagId, salt1, salt2)
     }
 
-    val pagesWithChecksum = hashSetOf(8, 16, 32, 40, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 104, 192, 200, 208, 216)
+    val pagesWithChecksum = hashSetOf(8, 16, 24, 32, 40, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 104, 192, 200, 208, 216)
 
     @OptIn(ExperimentalStdlibApi::class)
     internal fun validateCharacterData(data: ByteArray) {
