@@ -16,8 +16,10 @@ class VBNfcHandlerFactory(private val vbSecrets: VBNfcHandler.Secrets, private v
         const val OPERATION_CHECK_DIM: Byte = 3
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun getHandler(nfcData: NfcA): VBNfcHandler {
         val readData = nfcData.transceive(byteArrayOf(VBNfcHandler.NFC_READ_COMMAND, VBNfcHandler.FIRST_DATA_PAGE))
+        Log.i("VBNfcHandlerFactory", "First 8 Pages: ${readData.toHexString()}")
         val vbCompatibleTagIdentifier = readData.getUInt32(0, ByteOrder.BIG_ENDIAN) // this is a magic number used to verify that the tag is a VB.
         val deviceId = readData.getUInt16(4, ByteOrder.BIG_ENDIAN)
         val deviceSubId = readData.getUInt16(6, ByteOrder.BIG_ENDIAN)

@@ -1,10 +1,10 @@
 package com.github.cfogrady.vbnfc.handlers
 
-import android.nfc.NfcAdapter
 import android.nfc.tech.NfcA
 import android.util.Log
 import com.github.cfogrady.vbnfc.ConvertToPages
 import com.github.cfogrady.vbnfc.NfcCharacter
+import com.github.cfogrady.vbnfc.NfcCharacterFactory
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
 import java.nio.charset.StandardCharsets
@@ -15,9 +15,9 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
 
-abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: NfcA) {
+abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: NfcA, private val nfcCharacterFactory: NfcCharacterFactory = NfcCharacterFactory()) {
     abstract fun readHeader()
-    abstract fun getDeviceId(): Int
+    abstract fun getDeviceId(): UShort
 
     companion object {
         const val TAG = "VBNfcHandler"
@@ -41,6 +41,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
 
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun receiveCharacter() {
         Log.i(TAG, "Writing to make ready for operation")
         nfcData.transceive(getOperationCommandBytes(OPERATION_READY))
@@ -48,14 +49,17 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
 
         passwordAuth()
         Log.i(TAG, "Reading Character")
-        val characterData = readCharacter()
-        validateCharacterData(characterData)
+        val encryptedCharacterData = readNfcData()
+        Log.i(TAG, "Raw NFC Data Received: ${encryptedCharacterData.toHexString()}")
+        val decryptedCharacterData = decryptData(encryptedCharacterData, nfcData.tag.id)
+        validateCharacterData(decryptedCharacterData)
+        val nfcCharacter = nfcCharacterFactory.buildNfcCharacterFromBytes(decryptedCharacterData, getDeviceId())
+        Log.i(TAG, "Known Character Stats: $nfcCharacter")
         Log.i(TAG, "Signaling operation complete")
         nfcData.transceive(getOperationCommandBytes(OPERATION_TRANSFERRED_TO_APP))
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    private fun readCharacter(): ByteArray {
+    private fun readNfcData(): ByteArray {
         val result = ByteArray(((LAST_DATA_PAGE+4)- START_DATA_PAGE) * 4)
         for (page in START_DATA_PAGE..LAST_DATA_PAGE step 4) {
             val pages = nfcData.transceive(byteArrayOf(NFC_READ_COMMAND, page.toByte()))
@@ -75,6 +79,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
         // The version check is only for the BE when transfering from DIM=0 (pulsemon).
         // This was from the bug when the BE first came out.
         // Check (page 103 [0:1] != 1, 0)
+        setHeaderDimId(dimId)
         nfcData.transceive(getOperationCommandBytes(OPERATION_CHECK_DIM))
     }
 
@@ -109,6 +114,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
     }
 
     abstract fun getHeaderDimId(): UShort
+    abstract fun setHeaderDimId(dimId: UShort)
 
     abstract fun getOperationCommandBytes(operation: Byte): ByteArray
 
@@ -122,8 +128,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
 
     @OptIn(ExperimentalStdlibApi::class)
     fun passwordAuth() {
-        NfcAdapter.EXTRA_ID
-        var tagId = nfcData.tag.id
+        val tagId = nfcData.tag.id
         Log.i(TAG, "TagId: ${tagId.toHexString()}")
         val password = createPassword(tagId)
         try {

@@ -24,12 +24,16 @@ class OriginalVBNfcHandler(secrets: Secrets, nfcData: NfcA, val vbCompatibleTagI
         TODO("Not yet implemented")
     }
 
-    override fun getDeviceId(): Int {
-        return DEVICE_ID.toInt()
+    override fun getDeviceId(): UShort {
+        return DEVICE_ID
     }
 
     override fun getHeaderDimId(): UShort {
         return dimId.toUShort()
+    }
+
+    override fun setHeaderDimId(dimId: UShort) {
+        this.dimId = dimId.toByte()
     }
 
     override fun getOperationCommandBytes(operation: Byte): ByteArray {

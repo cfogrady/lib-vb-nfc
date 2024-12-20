@@ -3,6 +3,7 @@ package com.github.cfogrady.vbnfc.handlers
 import android.nfc.tech.NfcA
 import android.util.Log
 import com.github.cfogrady.vbnfc.getUInt16
+import com.github.cfogrady.vbnfc.toByteArray
 import java.nio.ByteOrder
 
 class VBBENfcHandler(secrets: Secrets, nfcData: NfcA, val vbCompatibleTagIdentifier: UInt, val itemId: UShort, pagesSixAndSeven: ByteArray) : VBNfcHandler(secrets, nfcData) {
@@ -25,12 +26,16 @@ class VBBENfcHandler(secrets: Secrets, nfcData: NfcA, val vbCompatibleTagIdentif
         TODO("Not yet implemented")
     }
 
-    override fun getDeviceId(): Int {
-        return DEVICE_ID.toInt()
+    override fun getDeviceId(): UShort {
+        return DEVICE_ID
     }
 
     override fun getHeaderDimId(): UShort {
         return dimIdBytes.getUInt16(0, ByteOrder.BIG_ENDIAN)
+    }
+
+    override fun setHeaderDimId(dimId: UShort) {
+        dimIdBytes = dimId.toByteArray(ByteOrder.BIG_ENDIAN)
     }
 
     override fun getOperationCommandBytes(operation: Byte): ByteArray {

@@ -38,9 +38,25 @@ import kotlinx.coroutines.coroutineScope
 
 class MainActivity : ComponentActivity() {
 
+    val nfcCharacterFactory = NfcCharacterFactory()
+
     private lateinit var nfcAdapter: NfcAdapter
     private lateinit var secrets: VBNfcHandler.Secrets
     private lateinit var vbNfcHandlerFactory: VBNfcHandlerFactory
+
+    private val dummyCharacter = NfcCharacter(
+        132u,
+        4u,
+        NfcCharacter.AbilityRarity.None,
+        0u,
+        0u,
+        0u,
+        0u,
+        0u,
+        0u,
+        0u,
+        0u
+    )
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onNewIntent(intent: Intent?) {
@@ -65,6 +81,7 @@ class MainActivity : ComponentActivity() {
             decryptionKey = resources.getString(R.string.decryptionKey),
             substitutionCypher = resources.getIntArray(R.array.substitutionArray)
         )
+        Log.i("MainActivity", "Secrets: $secrets")
         vbNfcHandlerFactory = VBNfcHandlerFactory(secrets, secrets, secrets)
 
         val maybeNfcAdapter = NfcAdapter.getDefaultAdapter(this)
@@ -78,6 +95,7 @@ class MainActivity : ComponentActivity() {
             var passwordKey1 by remember { mutableStateOf(secrets.passwordKey1) }
             var passwordKey2 by remember { mutableStateOf(secrets.passwordKey2) }
             var decryptionKey by remember { mutableStateOf(secrets.decryptionKey) }
+            var dimId by remember { mutableStateOf("132") }
             LibVbNfcExampleTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -103,6 +121,12 @@ class MainActivity : ComponentActivity() {
                                 decryptionKey = it
                             })
                         }
+                        Row {
+                            Text(text = "DIM Id")
+                            TextField(value = dimId, onValueChange = {
+                                dimId = it
+                            })
+                        }
                         Button(onClick = {
                             secrets = VBNfcHandler.Secrets(passwordKey1, passwordKey2, decryptionKey, secrets.substitutionCypher)
                             vbNfcHandlerFactory = VBNfcHandlerFactory(secrets, secrets, secrets)
@@ -110,9 +134,29 @@ class MainActivity : ComponentActivity() {
                             Text(text = "Regenerate NFC Handler From Keys")
                         }
                         Button(onClick = {
-                            readCharacter()
+                            handleTag() {
+                                it.receiveCharacter()
+                                "Done reading character"
+                            }
                         }) {
                             Text(text = "Read Character")
+                        }
+                        Button(onClick = {
+                            handleTag() {
+                                Log.i("MainActivity", "Set Prepare dim for ${dimId.toUShort()}")
+                                it.prepareDIMForCharacter(dimId.toUShort())
+                                "Send character when device is ready"
+                            }
+                        }) {
+                            Text(text = "Prepare Device For DIM")
+                        }
+                        Button(onClick = {
+                            handleTag() {
+                                it.sendCharacter(dummyCharacter)
+                                "Character sent"
+                            }
+                        }) {
+                            Text(text = "Send Character")
                         }
                     }
 
@@ -126,48 +170,41 @@ class MainActivity : ComponentActivity() {
         startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
     }
 
-    private fun onReadCharacterTag(tag: Tag?) {
-        val nfcData = NfcA.get(tag)
-        if( nfcData == null) {
-            Toast.makeText(this, "Tag detected is not VB", Toast.LENGTH_SHORT).show()
-        }
-        nfcData.connect()
-        nfcData.use {
-            val handler = vbNfcHandlerFactory.getHandler(nfcData)
-            handler.receiveCharacter()
-            runOnUiThread {
-                Toast.makeText(this, "Done Reading Character", Toast.LENGTH_SHORT).show()
+    private fun buildOnReadTag(handlerFunc: (VBNfcHandler)->String): (Tag)->Unit {
+        return { tag->
+            val nfcData = NfcA.get(tag)
+            if (nfcData == null) {
+                runOnUiThread {
+                    Toast.makeText(this, "Tag detected is not VB", Toast.LENGTH_SHORT).show()
+                }
+            }
+            nfcData.connect()
+            nfcData.use {
+                val handler = vbNfcHandlerFactory.getHandler(nfcData)
+                val successText = handlerFunc(handler)
+                runOnUiThread {
+                    Toast.makeText(this, successText, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
-    fun readCharacter() {
+    private fun handleTag(handlerFunc: (VBNfcHandler)->String) {
         if (!nfcAdapter.isEnabled) {
             showWirelessSettings()
         } else {
             val options = Bundle()
             // Work around for some broken Nfc firmware implementations that poll the card too fast
             options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 250)
-            nfcAdapter.enableReaderMode(this, this::onReadCharacterTag, NfcAdapter.FLAG_READER_NFC_A or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+            nfcAdapter.enableReaderMode(this, buildOnReadTag(handlerFunc), NfcAdapter.FLAG_READER_NFC_A or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
                 options
             )
-//            val pendingIntent = PendingIntent.getActivity(
-//                this, 0, Intent(
-//                    this,
-//                    javaClass
-//                ).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_MUTABLE
-//            )
-//            val intentFilter = IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED)
-//            nfcAdapter.enableForegroundDispatch(this, pendingIntent, arrayOf(intentFilter), arrayOf(
-//                arrayOf(NfcA::class.java.name, MifareClassic::class.java.name, MifareUltralight::class.java.name)
-//            ))
         }
     }
 
     override fun onPause() {
         super.onPause()
         if (nfcAdapter.isEnabled) {
-            // nfcAdapter.disableForegroundDispatch(this)
             nfcAdapter.disableReaderMode(this)
         }
     }
