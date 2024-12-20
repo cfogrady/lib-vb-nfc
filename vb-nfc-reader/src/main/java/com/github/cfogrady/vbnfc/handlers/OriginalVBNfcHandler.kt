@@ -28,6 +28,10 @@ class OriginalVBNfcHandler(secrets: Secrets, nfcData: NfcA, val vbCompatibleTagI
         return DEVICE_ID.toInt()
     }
 
+    override fun getHeaderDimId(): UShort {
+        return dimId.toUShort()
+    }
+
     override fun getOperationCommandBytes(operation: Byte): ByteArray {
         return byteArrayOf(NFC_WRITE_COMMAND, 0x06, status, dimId, operation, reserved)
     }

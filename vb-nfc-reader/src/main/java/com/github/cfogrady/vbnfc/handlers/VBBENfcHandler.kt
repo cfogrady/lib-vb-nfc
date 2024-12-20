@@ -29,6 +29,10 @@ class VBBENfcHandler(secrets: Secrets, nfcData: NfcA, val vbCompatibleTagIdentif
         return DEVICE_ID.toInt()
     }
 
+    override fun getHeaderDimId(): UShort {
+        return dimIdBytes.getUInt16(0, ByteOrder.BIG_ENDIAN)
+    }
+
     override fun getOperationCommandBytes(operation: Byte): ByteArray {
         return byteArrayOf(NFC_WRITE_COMMAND, 0x06, status, operation, dimIdBytes[0], dimIdBytes[1])
     }
@@ -41,10 +45,6 @@ class VBBENfcHandler(secrets: Secrets, nfcData: NfcA, val vbCompatibleTagIdentif
         dimIdBytes = pageBytes.sliceArray(2..3)
         appFlag = pageBytes[4]
         nonce = pageBytes.sliceArray(5..7)
-        Log.i(TAG, "Header: Status $status, Operation $operation, DIM ${getDimId()} AppFlag $appFlag, Nonce ${nonce.toHexString()}")
-    }
-
-    fun getDimId(): UShort {
-        return dimIdBytes.getUInt16(0, ByteOrder.BIG_ENDIAN)
+        Log.i(TAG, "Header: Status $status, Operation $operation, DIM ${getHeaderDimId()} AppFlag $appFlag, Nonce ${nonce.toHexString()}")
     }
 }
