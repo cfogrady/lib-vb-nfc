@@ -3,8 +3,8 @@ package com.github.cfogrady.vbnfc.handlers
 import android.nfc.tech.NfcA
 import android.util.Log
 import com.github.cfogrady.vbnfc.ConvertToPages
-import com.github.cfogrady.vbnfc.NfcCharacter
-import com.github.cfogrady.vbnfc.NfcCharacterFactory
+import com.github.cfogrady.vbnfc.data.NfcCharacter
+import com.github.cfogrady.vbnfc.data.NfcDataFactory
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
 import java.nio.charset.StandardCharsets
@@ -15,7 +15,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
 
-abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: NfcA, private val nfcCharacterFactory: NfcCharacterFactory = NfcCharacterFactory()) {
+abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: NfcA, private val nfcDataFactory: NfcDataFactory = NfcDataFactory()) {
     abstract fun readHeader()
     abstract fun getDeviceId(): UShort
 
@@ -53,7 +53,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
         Log.i(TAG, "Raw NFC Data Received: ${encryptedCharacterData.toHexString()}")
         val decryptedCharacterData = decryptData(encryptedCharacterData, nfcData.tag.id)
         validateCharacterData(decryptedCharacterData)
-        val nfcCharacter = nfcCharacterFactory.buildNfcCharacterFromBytes(decryptedCharacterData, getDeviceId())
+        val nfcCharacter = nfcDataFactory.buildNfcCharacterFromBytes(decryptedCharacterData, getDeviceId())
         Log.i(TAG, "Known Character Stats: $nfcCharacter")
         Log.i(TAG, "Signaling operation complete")
         nfcData.transceive(getOperationCommandBytes(OPERATION_TRANSFERRED_TO_APP))

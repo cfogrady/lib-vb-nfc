@@ -1,12 +1,8 @@
 package com.github.cfogrady.vbnfc
 
-import android.app.PendingIntent
 import android.content.Intent
-import android.content.IntentFilter
 import android.nfc.NfcAdapter
 import android.nfc.Tag
-import android.nfc.tech.MifareClassic
-import android.nfc.tech.MifareUltralight
 import android.nfc.tech.NfcA
 import android.os.Bundle
 import android.provider.Settings
@@ -29,16 +25,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.github.cfogrady.vbnfc.data.NfcCharacter
+import com.github.cfogrady.vbnfc.data.NfcDataFactory
 import com.github.cfogrady.vbnfc.handlers.VBNfcHandler
 import com.github.cfogrady.vbnfc.handlers.VBNfcHandlerFactory
 import com.github.cfogrady.vbnfc.ui.theme.LibVbNfcExampleTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 
 
 class MainActivity : ComponentActivity() {
 
-    val nfcCharacterFactory = NfcCharacterFactory()
+    val nfcDataFactory = NfcDataFactory()
 
     private lateinit var nfcAdapter: NfcAdapter
     private lateinit var secrets: VBNfcHandler.Secrets
