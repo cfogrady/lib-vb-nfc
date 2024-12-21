@@ -9,7 +9,7 @@ class BENfcCharacter(
     vitalPoints: UShort,
     transformationCountdown: UShort,
     injuryStatus: UShort,
-    val pp: UShort,
+    trainingPp: UShort,
     currentPhaseBattlesWon: UShort,
     currentPhaseBattlesLost: UShort,
     totalBattlesWon: UShort,
@@ -45,7 +45,7 @@ class BENfcCharacter(
         vitalPoints,
         transformationCountdown,
         injuryStatus,
-        pp,
+        trainingPp,
         currentPhaseBattlesWon,
         currentPhaseBattlesLost,
         totalBattlesWon,
@@ -53,5 +53,13 @@ class BENfcCharacter(
         activityLevel,
         heartRateCurrent,
         transformationHistory
-    ) {
+    )
+{
+    fun getTrainingPp(): UShort {
+        return trophies
+    }
+
+    fun setTrainingPp(trainingPp: UShort) {
+        trophies = trainingPp
+    }
 }
