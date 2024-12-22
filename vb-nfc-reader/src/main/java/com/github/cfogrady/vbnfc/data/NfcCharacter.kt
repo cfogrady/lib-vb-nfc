@@ -1,21 +1,21 @@
 package com.github.cfogrady.vbnfc.data
 
 open class NfcCharacter(
-    var dimId: UShort,
+    val dimId: UShort,
     var charIndex: UShort,
     var phase: Byte,
     var attribute: Attribute,
     var mood: Byte,
     var vitalPoints: UShort,
     var transformationCountdown: UShort,
-    var injuryStatus: UShort,
+    var injuryStatus: InjuryStatus,
     var trophies: UShort,
     var currentPhaseBattlesWon: UShort,
     var currentPhaseBattlesLost: UShort,
     var totalBattlesWon: UShort,
     var totalBattlesLost: UShort,
     var activityLevel: Byte,
-    var heartRateCurrent: Byte,
+    var heartRateCurrent: UByte,
     var transformationHistory: Array<Transformation>
 ) {
 
@@ -40,5 +40,15 @@ open class NfcCharacter(
         Data,
         Vaccine,
         Free
+    }
+    enum class InjuryStatus {
+        None,
+        Injury,
+        InjuryHealed,
+        InjuryTwo,
+        InjuryTwoHealed,
+        InjuryThree,
+        InjuryThreeHealed,
+        InjuryFour,
     }
 }

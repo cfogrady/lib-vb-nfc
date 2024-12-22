@@ -1,7 +1,7 @@
 package com.github.cfogrady.vbnfc.data
 
-class BENfc(nfcCharacter: NfcCharacter, nfcDevice: NfcDevice):
-    NfcData<NfcCharacter, NfcDevice>(nfcCharacter, nfcDevice)
+class BENfc(nfcCharacter: BENfcCharacter, nfcDevice: BENfcDevice):
+    NfcData<BENfcCharacter, BENfcDevice>(nfcCharacter, nfcDevice)
 {
     lateinit var appReserved1: ByteArray
     var gender: Byte = 0

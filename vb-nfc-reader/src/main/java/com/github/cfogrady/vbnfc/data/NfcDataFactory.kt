@@ -6,9 +6,9 @@ import com.github.cfogrady.vbnfc.getUInt16
 import java.nio.ByteOrder
 
 class NfcDataFactory(private val beNfcDataFactory: BENfcDataFactory) {
-    fun buildNfcDataFromBytes(rawCharacter: ByteArray, productId: UShort): NfcData<NfcCharacter, NfcDevice> {
-        if (productId.toInt() == 4) {
-
-        }
-    }
+//    fun buildNfcDataFromBytes(rawCharacter: ByteArray, productId: UShort): NfcData<NfcCharacter, NfcDevice> {
+//        if (productId.toInt() == 4) {
+//
+//        }
+//    }
 }
