@@ -5,7 +5,7 @@ import com.github.cfogrady.vbnfc.ConvertToPages
 import com.github.cfogrady.vbnfc.getUInt16
 import java.nio.ByteOrder
 
-class NfcDataFactory(private val beNfcDataFactory: BENfcDataFactory) {
+class NfcDataFactory(private val beNfcDataFactory: BENfcDataFactory = BENfcDataFactory()) {
 //    fun buildNfcDataFromBytes(rawCharacter: ByteArray, productId: UShort): NfcData<NfcCharacter, NfcDevice> {
 //        if (productId.toInt() == 4) {
 //

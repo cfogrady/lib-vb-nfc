@@ -1,12 +1,14 @@
 package com.github.cfogrady.vbnfc.data
 
+import com.github.cfogrady.vbnfc.ChecksumCalculator
 import com.github.cfogrady.vbnfc.getUInt16
+import com.github.cfogrady.vbnfc.handlers.VBNfcHandler
 import com.github.cfogrady.vbnfc.toByteArray
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class BENfcDataFactory {
+class BENfcDataFactory(checksumCalculator: ChecksumCalculator = ChecksumCalculator()) {
 
     companion object {
         const val APP_RESERVED_START = 0
@@ -58,9 +60,9 @@ class BENfcDataFactory {
 
     }
 
-//    fun buildBENfcData(bytes: ByteArray): BENfc {
-//
-//    }
+                                                            //    fun buildBENfcData(bytes: ByteArray): BENfc {
+                                                            //
+                                                            //    }
 
     fun buildBENfcCharacter(bytes: ByteArray): BENfcCharacter {
         return BENfcCharacter(
@@ -203,8 +205,18 @@ class BENfcDataFactory {
         bytes[ITEM_TYPE_IDX] = character.itemType
         bytes[ITEM_MULTIPLIER_IDX] = character.itemMultiplier
         bytes[ITEM_REMAINING_TIME_IDX] = character.itemRemainingTime
-        character.otp0.copyInto(bytes, OTP_START_IDX, 0, OTP_END_IDX+1)
-        character.otp1.copyInto(bytes, OTP2_START_IDX, 0, OTP2_END_IDX + 1)
+        character.otp0.copyInto(bytes, OTP_START_IDX, 0, character.otp0.size)
+        character.otp1.copyInto(bytes, OTP2_START_IDX, 0, character.otp1.size)
+    }
+
+    // a block being 4 pages
+    private val firstIndicesOfBlocksToCopy = intArrayOf(32, 64, 96, 128, 256, 416)
+    fun performPageBlockDuplications(data: ByteArray) {
+        for (firstIndex in firstIndicesOfBlocksToCopy) {
+            for (i in firstIndex..firstIndex + 15) {
+                data[i+16] = data[i]
+            }
+        }
     }
 
     fun buildBENfcDevice(bytes: ByteArray): BENfcDevice {

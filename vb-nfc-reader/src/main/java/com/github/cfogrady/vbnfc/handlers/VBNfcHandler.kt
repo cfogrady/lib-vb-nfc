@@ -2,7 +2,10 @@ package com.github.cfogrady.vbnfc.handlers
 
 import android.nfc.tech.NfcA
 import android.util.Log
+import com.github.cfogrady.vbnfc.ChecksumCalculator
 import com.github.cfogrady.vbnfc.ConvertToPages
+import com.github.cfogrady.vbnfc.data.BENfcCharacter
+import com.github.cfogrady.vbnfc.data.BENfcDataFactory
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import com.github.cfogrady.vbnfc.data.NfcDataFactory
 import java.lang.IllegalArgumentException
@@ -15,7 +18,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
 
-abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: NfcA, private val nfcDataFactory: NfcDataFactory = NfcDataFactory()) {
+abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: NfcA, private val nfcDataFactory: BENfcDataFactory = BENfcDataFactory(), private val checksumCalculator: ChecksumCalculator = ChecksumCalculator() ) {
     abstract fun readHeader()
     abstract fun getDeviceId(): UShort
 
@@ -42,7 +45,7 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun receiveCharacter() {
+    fun receiveCharacter(): BENfcCharacter {
         Log.i(TAG, "Writing to make ready for operation")
         nfcData.transceive(getOperationCommandBytes(OPERATION_READY))
         Log.i(TAG, "Authenticating")
@@ -52,11 +55,12 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
         val encryptedCharacterData = readNfcData()
         Log.i(TAG, "Raw NFC Data Received: ${encryptedCharacterData.toHexString()}")
         val decryptedCharacterData = decryptData(encryptedCharacterData, nfcData.tag.id)
-        validateCharacterData(decryptedCharacterData)
-        val nfcCharacter = nfcDataFactory.buildNfcCharacterFromBytes(decryptedCharacterData, getDeviceId())
+        checksumCalculator.checkChecksums(decryptedCharacterData)
+        val nfcCharacter = nfcDataFactory.buildBENfcCharacter(decryptedCharacterData)
         Log.i(TAG, "Known Character Stats: $nfcCharacter")
         Log.i(TAG, "Signaling operation complete")
         nfcData.transceive(getOperationCommandBytes(OPERATION_TRANSFERRED_TO_APP))
+        return nfcCharacter
     }
 
     private fun readNfcData(): ByteArray {
@@ -84,7 +88,9 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun sendCharacter(character: NfcCharacter) {
+    fun sendCharacter(character: BENfcCharacter) {
+        Log.i(TAG, "Sending Character: $character")
+
         // check the nonce
         // if it's not expected, then the bracelet isn't ready
 
@@ -100,9 +106,17 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
         nfcData.transceive(getOperationCommandBytes(OPERATION_READY))
         passwordAuth()
 
+        val currentNfcData = readNfcData()
+        var newNfcData = decryptData(currentNfcData, nfcData.tag.id)
+        nfcDataFactory.writeCharacterToByteArray(character, newNfcData)
+        checksumCalculator.recalculateChecksums(newNfcData)
+        nfcDataFactory.performPageBlockDuplications(newNfcData)
+        newNfcData = encryptData(newNfcData, nfcData.tag.id)
+        Log.i(TAG, "Sending Character: ${newNfcData.toHexString()}")
+
+
         // write nfc data
-        val myCharacter = "551abd291a96404cb38cd99babe1184b43eb2479a65c59ebd7e0f3246845a54c5f9dc34770bc69e18ba7bc147c18516f3524c78631f16496e4492e97f74a289105d83d6cf1908eb66565fd4018986ef20862ce4a9376efcb001da75135c5c3fd93f4b9dad14d46c92f192c8e39cbd669c72f27d273a6ddcf554203761924dc1697f5e592c01dcdcc335a4f3eb89cd478907449b3401c0ae9cd0c56cc140a35dcc3dc9ad17a475ac884129d662e4525c14349d1ce507d59a34b1dbe60d1f7d8842da3f1f4604710eef661c3de5291cf33e5569e5abacf9b601d45eee68a7b6eaff0f21724e90cad6b721244d57d78da67d735a0e73deb431d6fb1b8fb755787ee51e8a20da957f97d62c408e6572f865be94aca43fa19116ac318fd2700f093011438f47eaac2e85d538042ff93ce6bc333589f6d341555d36fbba74567ef613d2242c9471f2ed7aa3e565cecd46fa2ca8f88a022c714fc04f0f69c43e74af7ad7bdec18794d9bc03e2e06773a54c3ddbfe76ee5f96845293ef8fc68653831c405edbd8594a620502cb506770a89ba999d4df0d23c40d021e7c2e7159d2f380cbeb77c5d97c9b503503e7dbbae37c42a4a2a4985cabbbc979d42aaac4651c95c41dc4b0baec7d7199e9d929836e13d3e3f8c958facb305f339992162ab0258b42dfa4a02ad3ec28d48c60909e008c5fb2b2e976942784e098313d75e8a6eec78d559aa2617c35574c7a0c5f8f7e103c77087b213d6b02c444a1fb4eab23a967ddac02f9b959675c69f3c97894929c4d5a2779444b05246da35744aab4b545eefc9478620d6e1fb584a9f79080236e005cf738228c104570c200e11b6307a2d236c6031b0f89da38ce1b401eed4dda2b78268d316115b2e9c222441d9cd8d4b559adb9f1ce4a8f2a0ed3f55034e47c778d85654ac1e5048326827f0db6103cfcce491d6bf084a9e7ee2a1446c616c87f1246fb2da22a6eaae4167814f24230aed64e342cae18742c21e4b2f2c600ce783f7ec33f6937a2224a366cd1feb53011e766d0d5459d1b83a1a9147be8ddc8fea75bbdeac18077aaa469898354ff400608e2dac32be82ff7528252c0da681d2fe78150f6020c3691b5cc6cb81285f6716acf0040b346d1b76cd61bc08377f67a8adc341ceda34585ddefeee1dfc416d05067015984e3619bcbc188d8d49ab4024c9e1b83a6c0fd91b4e835d59b3f59d97d".hexToByteArray()
-        val pagedData = ConvertToPages(myCharacter)
+        val pagedData = ConvertToPages(newNfcData)
         for(pageToWriteIdx in 8..<pagedData.size) {
             val pageToWrite = pagedData[pageToWriteIdx]
             nfcData.transceive(byteArrayOf(NFC_WRITE_COMMAND, pageToWriteIdx.toByte(), pageToWrite[0], pageToWrite[1], pageToWrite[2], pageToWrite[3]))
@@ -194,25 +208,10 @@ abstract class VBNfcHandler(private val secrets: Secrets, private val nfcData: N
         return cryptoTransformation(Cipher.DECRYPT_MODE, data, tagId, salt1, salt2)
     }
 
-    val pagesWithChecksum = hashSetOf(8, 16, 24, 32, 40, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 104, 192, 200, 208, 216)
-
-    @OptIn(ExperimentalStdlibApi::class)
-    internal fun validateCharacterData(data: ByteArray) {
-        // loop through all data
-        for(i in data.indices step 16) {
-            val page = i/4 + 8 // first 8 pages are header data and not part of the character data
-            if (pagesWithChecksum.contains(page)) {
-                var sum = 0
-                val checksumIndex = i + 15
-                for(j in i..<checksumIndex) {
-                    sum += data[j]
-                }
-                val checksumByte = (sum and 0xff).toByte()
-                if (checksumByte != data[checksumIndex]) {
-                    throw IllegalStateException("Checksum ${checksumByte.toHexString()} doesn't match expected ${data[checksumIndex].toHexString()}")
-                }
-            }
-        }
+    internal fun encryptData(data: ByteArray, tagId: ByteArray): ByteArray {
+        val salt1 = decodeBase64AndDecrypt(secrets.passwordKey1)
+        val salt2 = decodeBase64AndDecrypt(secrets.passwordKey2)
+        return cryptoTransformation(Cipher.ENCRYPT_MODE, data, tagId, salt1, salt2)
     }
 
     // Hashes the tagId once and applies substitution cipher. Then hashes again.

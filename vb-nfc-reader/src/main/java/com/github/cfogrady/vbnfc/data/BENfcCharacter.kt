@@ -68,6 +68,54 @@ class BENfcCharacter(
     }
 
     fun getWinPercentage(): Byte {
-        return ((100u * currentPhaseBattlesWon) / (currentPhaseBattlesWon + currentPhaseBattlesLost)).toByte()
+        val totalBatles = currentPhaseBattlesWon + currentPhaseBattlesLost
+        if (totalBatles == 0u) {
+            return 0
+        }
+        return ((100u * currentPhaseBattlesWon) / totalBatles).toByte()
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun toString(): String {
+        return """
+    dimId: $dimId,
+    charIndex: $charIndex,
+    phase: $phase,
+    attribute: $attribute,
+    mood: $mood,
+    vitalPoints: $vitalPoints,
+    transformationCountdown: $transformationCountdown,
+    injuryStatus: $injuryStatus,
+    trainingPp: $trophies,
+    currentPhaseBattlesWon: $currentPhaseBattlesWon,
+    currentPhaseBattlesLost: $currentPhaseBattlesLost,
+    totalBattlesWon: $totalBattlesWon,
+    totalBattlesLost: $totalBattlesLost,
+    activityLevel: $activityLevel,
+    heartRateCurrent: $heartRateCurrent,
+    transformationHistory: $transformationHistory,
+    trainingHp: $trainingHp,
+    trainingAp: $trainingAp,
+    trainingBp: $trainingBp,
+    remainingTrainingTime: $remainingTrainingTime,
+    itemEffectMentalStateValue: $itemEffectMentalStateValue,
+    itemEffectMentalStateMinutesRemaining: $itemEffectMentalStateMinutesRemaining,
+    itemEffectActivityLevelValue: $itemEffectActivityLevelValue,
+    itemEffectActivityLevelMinutesRemaining: $itemEffectActivityLevelMinutesRemaining,
+    itemEffectVitalPointsChangeValue: $itemEffectVitalPointsChangeValue,
+    itemEffectVitalPointsChangeMinutesRemaining: $itemEffectVitalPointsChangeMinutesRemaining,
+    abilityRarity: $abilityRarity,
+    abilityType: $abilityType,
+    abilityBranch: $abilityBranch,
+    abilityReset: $abilityReset,
+    rank: $rank,
+    itemType: $itemType,
+    itemMultiplier: $itemMultiplier,
+    itemRemainingTime: $itemRemainingTime,
+    otp0: ${otp0.toHexString()}
+    otp1: ${otp1.toHexString()}
+    appReserved1: ${appReserved1.toHexString()}
+    appReserved2: $appReserved2
+        """.trimIndent()
     }
 }
