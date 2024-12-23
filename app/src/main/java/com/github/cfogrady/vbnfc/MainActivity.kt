@@ -1,12 +1,8 @@
 package com.github.cfogrady.vbnfc
 
-import android.app.PendingIntent
 import android.content.Intent
-import android.content.IntentFilter
 import android.nfc.NfcAdapter
 import android.nfc.Tag
-import android.nfc.tech.MifareClassic
-import android.nfc.tech.MifareUltralight
 import android.nfc.tech.NfcA
 import android.os.Bundle
 import android.provider.Settings
@@ -29,34 +25,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.github.cfogrady.vbnfc.data.BENfcCharacter
+import com.github.cfogrady.vbnfc.data.NfcCharacter
+import com.github.cfogrady.vbnfc.data.NfcDataFactory
 import com.github.cfogrady.vbnfc.handlers.VBNfcHandler
 import com.github.cfogrady.vbnfc.handlers.VBNfcHandlerFactory
 import com.github.cfogrady.vbnfc.ui.theme.LibVbNfcExampleTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
 
 class MainActivity : ComponentActivity() {
 
-    val nfcCharacterFactory = NfcCharacterFactory()
+    val nfcDataFactory = NfcDataFactory()
 
     private lateinit var nfcAdapter: NfcAdapter
     private lateinit var secrets: VBNfcHandler.Secrets
     private lateinit var vbNfcHandlerFactory: VBNfcHandlerFactory
 
-    private val dummyCharacter = NfcCharacter(
-        132u,
-        4u,
-        NfcCharacter.AbilityRarity.None,
-        0u,
-        0u,
-        0u,
-        0u,
-        0u,
-        0u,
-        0u,
-        0u
-    )
+    private var nfcCharacter = MutableStateFlow<BENfcCharacter?>(null)
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onNewIntent(intent: Intent?) {
@@ -95,7 +82,8 @@ class MainActivity : ComponentActivity() {
             var passwordKey1 by remember { mutableStateOf(secrets.passwordKey1) }
             var passwordKey2 by remember { mutableStateOf(secrets.passwordKey2) }
             var decryptionKey by remember { mutableStateOf(secrets.decryptionKey) }
-            var dimId by remember { mutableStateOf("132") }
+            var phase by remember { mutableStateOf("") }
+            var charIndex by remember { mutableStateOf("") }
             LibVbNfcExampleTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -104,38 +92,23 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Column {
                         Row {
-                            Text(text = "Password Key 1")
-                            TextField(value = passwordKey1, onValueChange = {
-                                passwordKey1 = it
+                            Text(text = "Phase")
+                            TextField(value = phase, onValueChange = {
+                                phase = it
                             })
                         }
                         Row {
-                            Text(text = "Password Key 2")
-                            TextField(value = passwordKey2, onValueChange = {
-                                passwordKey2 = it
+                            Text(text = "Char Index")
+                            TextField(value = charIndex, onValueChange = {
+                                charIndex = it
                             })
-                        }
-                        Row {
-                            Text(text = "Decryption Key")
-                            TextField(value = decryptionKey, onValueChange = {
-                                decryptionKey = it
-                            })
-                        }
-                        Row {
-                            Text(text = "DIM Id")
-                            TextField(value = dimId, onValueChange = {
-                                dimId = it
-                            })
-                        }
-                        Button(onClick = {
-                            secrets = VBNfcHandler.Secrets(passwordKey1, passwordKey2, decryptionKey, secrets.substitutionCypher)
-                            vbNfcHandlerFactory = VBNfcHandlerFactory(secrets, secrets, secrets)
-                        }) {
-                            Text(text = "Regenerate NFC Handler From Keys")
                         }
                         Button(onClick = {
                             handleTag() {
-                                it.receiveCharacter()
+                                val character = it.receiveCharacter()
+                                nfcCharacter.value = character
+                                phase=character.phase.toString()
+                                charIndex=character.charIndex.toString()
                                 "Done reading character"
                             }
                         }) {
@@ -143,8 +116,10 @@ class MainActivity : ComponentActivity() {
                         }
                         Button(onClick = {
                             handleTag() {
-                                Log.i("MainActivity", "Set Prepare dim for ${dimId.toUShort()}")
-                                it.prepareDIMForCharacter(dimId.toUShort())
+                                nfcCharacter.value?.let { character ->
+                                    Log.i("MainActivity", "Set Prepare dim for ${character.dimId}")
+                                    it.prepareDIMForCharacter(character.dimId)
+                                }
                                 "Send character when device is ready"
                             }
                         }) {
@@ -152,7 +127,11 @@ class MainActivity : ComponentActivity() {
                         }
                         Button(onClick = {
                             handleTag() {
-                                it.sendCharacter(dummyCharacter)
+                                nfcCharacter.value?.let {character ->
+                                    character.phase = phase.toByte()
+                                    character.charIndex = charIndex.toUShort()
+                                    it.sendCharacter(character)
+                                }
                                 "Character sent"
                             }
                         }) {

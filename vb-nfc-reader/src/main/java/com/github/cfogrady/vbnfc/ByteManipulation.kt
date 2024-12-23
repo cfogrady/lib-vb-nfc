@@ -57,3 +57,14 @@ fun UShort.toByteArray(byteOrder: ByteOrder = ByteOrder.nativeOrder()): ByteArra
     }
     return byteArray
 }
+
+fun UShort.toByteArray(bytes: ByteArray, dstIndex: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()) {
+    val asUInt = this.toUInt()
+    for(i in 0 until 2) {
+        if(byteOrder == ByteOrder.LITTLE_ENDIAN) {
+            bytes[i+dstIndex] = ((asUInt shr 8*i) and 255u).toByte()
+        } else {
+            bytes[(1-i) + dstIndex] = ((asUInt shr 8*i) and 255u).toByte()
+        }
+    }
+}
