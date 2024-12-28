@@ -1,5 +1,6 @@
-package com.github.cfogrady.vbnfc.data
+package com.github.cfogrady.vbnfc.be
 
+import com.github.cfogrady.vbnfc.data.NfcDevice
 import java.util.BitSet
 
 class BENfcDevice(
@@ -8,7 +9,7 @@ class BENfcDevice(
     val currDays: Byte,
 
 
-):
+    ):
     NfcDevice(
         BitSet(),
     ) {

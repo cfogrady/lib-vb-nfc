@@ -25,25 +25,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.github.cfogrady.vbnfc.data.BENfcCharacter
+import com.github.cfogrady.vbnfc.be.BENfcCharacter
 import com.github.cfogrady.vbnfc.data.NfcCharacter
-import com.github.cfogrady.vbnfc.data.NfcDataFactory
-import com.github.cfogrady.vbnfc.handlers.VBNfcHandler
-import com.github.cfogrady.vbnfc.handlers.VBNfcHandlerFactory
 import com.github.cfogrady.vbnfc.ui.theme.LibVbNfcExampleTheme
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 
 
 class MainActivity : ComponentActivity() {
 
-    val nfcDataFactory = NfcDataFactory()
-
     private lateinit var nfcAdapter: NfcAdapter
-    private lateinit var secrets: VBNfcHandler.Secrets
-    private lateinit var vbNfcHandlerFactory: VBNfcHandlerFactory
+    private lateinit var secrets: CryptographicTransformer.Secrets
 
-    private var nfcCharacter = MutableStateFlow<BENfcCharacter?>(null)
+    private var nfcCharacter = MutableStateFlow<NfcCharacter?>(null)
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onNewIntent(intent: Intent?) {
@@ -62,14 +55,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        secrets = VBNfcHandler.Secrets(
+        secrets = CryptographicTransformer.Secrets(
             passwordKey1 = resources.getString(R.string.password1),
             passwordKey2 = resources.getString(R.string.password2),
             decryptionKey = resources.getString(R.string.decryptionKey),
-            substitutionCypher = resources.getIntArray(R.array.substitutionArray)
+            substitutionCipher = resources.getIntArray(R.array.substitutionArray)
         )
         Log.i("MainActivity", "Secrets: $secrets")
-        vbNfcHandlerFactory = VBNfcHandlerFactory(secrets, secrets, secrets)
 
         val maybeNfcAdapter = NfcAdapter.getDefaultAdapter(this)
         if (maybeNfcAdapter == null) {
@@ -79,9 +71,6 @@ class MainActivity : ComponentActivity() {
         }
         nfcAdapter = maybeNfcAdapter
         setContent {
-            var passwordKey1 by remember { mutableStateOf(secrets.passwordKey1) }
-            var passwordKey2 by remember { mutableStateOf(secrets.passwordKey2) }
-            var decryptionKey by remember { mutableStateOf(secrets.decryptionKey) }
             var phase by remember { mutableStateOf("") }
             var charIndex by remember { mutableStateOf("") }
             LibVbNfcExampleTheme {
@@ -149,7 +138,7 @@ class MainActivity : ComponentActivity() {
         startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
     }
 
-    private fun buildOnReadTag(handlerFunc: (VBNfcHandler)->String): (Tag)->Unit {
+    private fun buildOnReadTag(handlerFunc: (TagCommunicator)->String): (Tag)->Unit {
         return { tag->
             val nfcData = NfcA.get(tag)
             if (nfcData == null) {
@@ -159,8 +148,8 @@ class MainActivity : ComponentActivity() {
             }
             nfcData.connect()
             nfcData.use {
-                val handler = vbNfcHandlerFactory.getHandler(nfcData)
-                val successText = handlerFunc(handler)
+                val tagCommunicator = TagCommunicator.getInstance(nfcData, secrets)
+                val successText = handlerFunc(tagCommunicator)
                 runOnUiThread {
                     Toast.makeText(this, successText, Toast.LENGTH_SHORT).show()
                 }
@@ -168,7 +157,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun handleTag(handlerFunc: (VBNfcHandler)->String) {
+    private fun handleTag(handlerFunc: (TagCommunicator)->String) {
         if (!nfcAdapter.isEnabled) {
             showWirelessSettings()
         } else {
