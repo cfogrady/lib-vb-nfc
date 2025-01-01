@@ -1,10 +1,6 @@
-package com.github.cfogrady.vbnfc.handlers
+package com.github.cfogrady.vbnfc
 
-import com.github.cfogrady.vbnfc.ChecksumCalculator
-import com.github.cfogrady.vbnfc.CryptographicTransformer
-import com.github.cfogrady.vbnfc.VBBESecrets
 import com.github.cfogrady.vbnfc.be.BENfcDataTranslator
-import com.github.cfogrady.vbnfc.getUInt16
 import io.mockk.every
 import io.mockk.mockkStatic
 import org.junit.Assert
@@ -31,7 +27,7 @@ class CryptographicTransformerTest {
             1
         }
 
-        val cryptographicTransformer = CryptographicTransformer(VBBESecrets)
+        val cryptographicTransformer = VBBECryptographicTransformer
 
         val result = cryptographicTransformer.createNfcPassword(testTagId)
         val expected = "5651b1c8"
@@ -49,9 +45,9 @@ class CryptographicTransformerTest {
             1
         }
 
-        val cryptographicTransformer = CryptographicTransformer(VBBESecrets)
+        val cryptographicTransformer = VBBECryptographicTransformer
         val checksumCalculator = ChecksumCalculator()
-        val translator = BENfcDataTranslator()
+        val translator = BENfcDataTranslator(cryptographicTransformer)
 
         // val pagesOfInterest = listOf<IntRange>(8..223) // everything
         // val pagesOfInterest = listOf<IntRange>(24..103) // character data

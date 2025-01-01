@@ -25,7 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.github.cfogrady.vbnfc.be.BENfcCharacter
+import com.github.cfogrady.vbnfc.data.DeviceType
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import com.github.cfogrady.vbnfc.ui.theme.LibVbNfcExampleTheme
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class MainActivity : ComponentActivity() {
 
     private lateinit var nfcAdapter: NfcAdapter
-    private lateinit var secrets: CryptographicTransformer.Secrets
+    private lateinit var deviceToCryptographicTransformers: Map<UShort, CryptographicTransformer>
 
     private var nfcCharacter = MutableStateFlow<NfcCharacter?>(null)
 
@@ -55,13 +55,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        secrets = CryptographicTransformer.Secrets(
-            passwordKey1 = resources.getString(R.string.password1),
-            passwordKey2 = resources.getString(R.string.password2),
-            decryptionKey = resources.getString(R.string.decryptionKey),
-            substitutionCipher = resources.getIntArray(R.array.substitutionArray)
-        )
-        Log.i("MainActivity", "Secrets: $secrets")
+        deviceToCryptographicTransformers = getMapOfCryptographicTransformers()
 
         val maybeNfcAdapter = NfcAdapter.getDefaultAdapter(this)
         if (maybeNfcAdapter == null) {
@@ -133,6 +127,26 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    fun getMapOfCryptographicTransformers(): Map<UShort, CryptographicTransformer> {
+        return mapOf(
+            Pair(DeviceType.VitalBraceletBEDeviceType,
+                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
+                    salt2 = resources.getString(R.string.password2),
+                    decryptionKey = resources.getString(R.string.decryptionKey),
+                    substitutionCipher = resources.getIntArray(R.array.substitutionArray))),
+            Pair(DeviceType.VitalSeriesDeviceType,
+                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
+                    salt2 = resources.getString(R.string.password2),
+                    decryptionKey = resources.getString(R.string.decryptionKey),
+                    substitutionCipher = resources.getIntArray(R.array.substitutionArray))),
+            Pair(DeviceType.VitalCharactersDeviceType,
+                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
+                    salt2 = resources.getString(R.string.password2),
+                    decryptionKey = resources.getString(R.string.decryptionKey),
+                    substitutionCipher = resources.getIntArray(R.array.substitutionArray)))
+        )
+    }
+
     private fun showWirelessSettings() {
         Toast.makeText(this, "NFC must be enabled", Toast.LENGTH_SHORT).show()
         startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
@@ -148,7 +162,7 @@ class MainActivity : ComponentActivity() {
             }
             nfcData.connect()
             nfcData.use {
-                val tagCommunicator = TagCommunicator.getInstance(nfcData, secrets)
+                val tagCommunicator = TagCommunicator.getInstance(nfcData, deviceToCryptographicTransformers)
                 val successText = handlerFunc(tagCommunicator)
                 runOnUiThread {
                     Toast.makeText(this, successText, Toast.LENGTH_SHORT).show()

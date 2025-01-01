@@ -4,8 +4,8 @@ import com.github.cfogrady.vbnfc.data.DeviceType
 import com.github.cfogrady.vbnfc.data.NfcHeader
 
 class VBNfcHeader(
-    deviceType: DeviceType,
-    deviceSubType: DeviceSubType,
+    deviceType: UShort,
+    deviceSubType: UShort,
     vbCompatibleTagIdentifier: ByteArray,
     status: Byte,
     operation: Byte,

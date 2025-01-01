@@ -8,17 +8,15 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
 
-class CryptographicTransformer(private val secrets: Secrets) {
-
-    data class Secrets(val passwordKey1: String, val passwordKey2: String, val decryptionKey: String, val substitutionCipher: IntArray)
+class CryptographicTransformer(private val salt1: String, private val salt2: String, private val decryptionKey: String, private val substitutionCipher: IntArray) {
 
     // Creates a 4 byte password by hashing the current data using HMAC256 with the first key. Then
     // applying a 4-bit substitution cypher on the result, and hashing again with the second key.
     // The password are the 4 bytes starting at index 28 of that result.
     @OptIn(ExperimentalStdlibApi::class)
     fun createNfcPassword(inputData: ByteArray): ByteArray {
-        val salt1 = decryptSalt(secrets.passwordKey1)
-        val salt2 = decryptSalt(secrets.passwordKey2)
+        val salt1 = decryptSalt(salt1)
+        val salt2 = decryptSalt(salt2)
         val hashedInput = generateHMacSHA256Hash(salt1, inputData)
         val substitutedBytes = apply4BitSubstitutionCipher(hashedInput)
         val secondHash = generateHMacSHA256Hash(salt2, substitutedBytes)
@@ -26,20 +24,20 @@ class CryptographicTransformer(private val secrets: Secrets) {
     }
 
     fun decryptData(data: ByteArray, tagId: ByteArray): ByteArray {
-        val salt1 = decryptSalt(secrets.passwordKey1)
-        val salt2 = decryptSalt(secrets.passwordKey2)
+        val salt1 = decryptSalt(salt1)
+        val salt2 = decryptSalt(salt2)
         return cryptoTransformation(Cipher.DECRYPT_MODE, data, tagId, salt1, salt2)
     }
 
     fun encryptData(data: ByteArray, tagId: ByteArray): ByteArray {
-        val salt1 = decryptSalt(secrets.passwordKey1)
-        val salt2 = decryptSalt(secrets.passwordKey2)
+        val salt1 = decryptSalt(salt1)
+        val salt2 = decryptSalt(salt2)
         return cryptoTransformation(Cipher.ENCRYPT_MODE, data, tagId, salt1, salt2)
     }
 
     private fun decryptSalt(str: String): String {
         val decoded = Base64.getDecoder().decode(str)
-        val decrypt = decryptAesCbcPkcs5Padding(secrets.decryptionKey, decoded)
+        val decrypt = decryptAesCbcPkcs5Padding(decryptionKey, decoded)
         return String(decrypt, StandardCharsets.UTF_8)
     }
 
@@ -71,7 +69,7 @@ class CryptographicTransformer(private val secrets: Secrets) {
             for (fourBitShifts in 0..<2) { // perform one OR without shift, and one OR shifted 4 bits
                 val shift = fourBitShifts * 4
                 val permutationIndex = (byte shr shift) and 0xF
-                newByte = newByte or (secrets.substitutionCipher[permutationIndex] shl shift)
+                newByte = newByte or (substitutionCipher[permutationIndex] shl shift)
             }
             result[idx] = newByte.toByte()
         }

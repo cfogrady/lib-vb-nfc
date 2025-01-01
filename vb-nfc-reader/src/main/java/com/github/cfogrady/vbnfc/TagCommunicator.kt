@@ -34,7 +34,7 @@ class TagCommunicator(
 
         const val HMAC256 = "HmacSHA256"
 
-        fun getInstance(nfcData: NfcA, deviceTypeIdSecrets: Map<UShort, CryptographicTransformer.Secrets>): TagCommunicator {
+        fun getInstance(nfcData: NfcA, deviceTypeIdSecrets: Map<UShort, CryptographicTransformer>): TagCommunicator {
             val checksumCalculator = ChecksumCalculator()
             val deviceToTranslator = HashMap<UShort, NfcDataTranslator>()
             for (keyValue in deviceTypeIdSecrets) {

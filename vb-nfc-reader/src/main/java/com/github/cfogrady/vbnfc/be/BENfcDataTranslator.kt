@@ -6,6 +6,7 @@ import com.github.cfogrady.vbnfc.CryptographicTransformer
 import com.github.cfogrady.vbnfc.NfcDataTranslator
 import com.github.cfogrady.vbnfc.TagCommunicator
 import com.github.cfogrady.vbnfc.copyIntoUShortArray
+import com.github.cfogrady.vbnfc.data.DeviceSubType
 import com.github.cfogrady.vbnfc.data.DeviceType
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import com.github.cfogrady.vbnfc.data.NfcHeader
@@ -14,11 +15,9 @@ import com.github.cfogrady.vbnfc.toByteArray
 import java.nio.ByteOrder
 
 class BENfcDataTranslator(
-    private val secrets: CryptographicTransformer.Secrets,
+    override val cryptographicTransformer: CryptographicTransformer,
     private val checksumCalculator: ChecksumCalculator = ChecksumCalculator()
 ): NfcDataTranslator {
-
-    override val cryptographicTransformer = CryptographicTransformer(secrets)
 
     companion object {
 
@@ -195,8 +194,8 @@ class BENfcDataTranslator(
     override fun parseHeader(headerBytes: ByteArray): NfcHeader {
         Log.i(TagCommunicator.TAG, "Bytes in header: ${headerBytes.size}")
         val header = NfcHeader(
-            deviceId = DeviceType.VitalBraceletBE,
-            deviceSubType = NfcHeader.DeviceSubType.Original,
+            deviceId = DeviceType.VitalBraceletBEDeviceType,
+            deviceSubType = DeviceSubType.Original,
             vbCompatibleTagIdentifier = headerBytes.sliceArray(0..3), // this is a magic number used to verify that the tag is a VB.
             status = headerBytes[8],
             operation = headerBytes[9],
