@@ -5,6 +5,8 @@ open class NfcCharacter(
     var charIndex: UShort,
     var phase: Byte,
     var attribute: Attribute,
+    var ageInDays: Byte,
+    var adventureMissionStage: Byte,
     var mood: Byte,
     var vitalPoints: UShort,
     var transformationCountdown: UShort,

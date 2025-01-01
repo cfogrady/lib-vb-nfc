@@ -62,7 +62,7 @@ class BENfcDataFactory(checksumCalculator: ChecksumCalculator = ChecksumCalculat
 //
 //        reserved8 = readUShort(297)
 //        reserved9 = readUShortArray(376, 2)
-//        firmwareVersion = readUShort(380)
+//
     }
 
 }

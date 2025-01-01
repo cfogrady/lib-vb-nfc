@@ -7,6 +7,8 @@ class BENfcCharacter(
     charIndex: UShort,
     phase: Byte,
     attribute: Attribute,
+    ageInDays: Byte,
+    adventureMissionStage: Byte,
     mood: Byte,
     vitalPoints: UShort,
     transformationCountdown: UShort,
@@ -39,6 +41,7 @@ class BENfcCharacter(
     var itemRemainingTime: Byte,
     internal val otp0: ByteArray, // OTP matches the character to the dim
     internal val otp1: ByteArray, // OTP matches the character to the dim
+    var characterCreationFirmwareVersion: FirmwareVersion,
     var appReserved1: ByteArray, // this is a 12 byte array reserved for new app features, a custom app should be able to safely use this for custom features
     var appReserved2: Array<UShort>, // this is a 3 element array reserved for new app features, a custom app should be able to safely use this for custom features
 ) :
@@ -47,7 +50,9 @@ class BENfcCharacter(
         charIndex = charIndex,
         phase = phase,
         attribute = attribute,
-        mood =mood,
+        ageInDays = ageInDays,
+        adventureMissionStage = adventureMissionStage,
+        mood = mood,
         vitalPoints = vitalPoints,
         transformationCountdown = transformationCountdown,
         injuryStatus = injuryStatus,
@@ -84,7 +89,10 @@ class BENfcCharacter(
     charIndex: $charIndex,
     phase: $phase,
     attribute: $attribute,
+    age: $ageInDays
     mood: $mood,
+    creationFirmwareVersion: $characterCreationFirmwareVersion
+    adventureMissionStage: $adventureMissionStage
     vitalPoints: $vitalPoints,
     transformationCountdown: $transformationCountdown,
     injuryStatus: $injuryStatus,

@@ -23,6 +23,7 @@ class BENfcDataTranslator(
 
         const val OPERATION_PAGE: Byte = 0x6
 
+        // CHARACTER
         const val APP_RESERVED_START = 0
         const val APP_RESERVED_SIZE = 12
         const val INJURY_STATUS_IDX = 64
@@ -32,12 +33,15 @@ class BENfcDataTranslator(
         const val DIM_ID_IDX = 74
         const val PHASE_IDX = 76
         const val ATTRIBUTE_IDX = 77
+        const val AGE_IN_DAYS_IDX = 78 // always 0 on BE :(
         const val TRAINING_PP_IDX = 96
         const val CURRENT_BATTLES_WON_IDX = 98
         const val CURRENT_BATTLES_LOST_IDX = 100
         const val TOTAL_BATTLES_WON_IDX = 102
         const val TOTAL_BATTLES_LOST_IDX = 104
         const val WIN_PCT_IDX = 106 // unused
+        const val CHARACTER_CREATION_FIRMWARE_VERSION_IDX = 108
+        const val ADVENTURE_MISSION_STAGE_IDX = 128
         const val MOOD_IDX = 129
         const val ACTIVITY_LEVEL_IDX = 130
         const val HEART_RATE_CURRENT_IDX = 131
@@ -50,7 +54,6 @@ class BENfcDataTranslator(
         const val ITEM_EFFECT_VITAL_POINTS_CHANGE_MINUTES_REMAINING_IDX = 139
         // 140 reserved
         const val TRANSFORMATION_COUNT_DOWN_IDX = 141
-        const val VITAL_POINTS_CURRENT_IDX = 160
         const val TRANSFORMATION_HISTORY_START = 208
         const val TRAINING_HP_IDX = 256
         const val TRAINING_AP_IDX = 258
@@ -68,6 +71,10 @@ class BENfcDataTranslator(
         const val OTP_END_IDX = 359
         const val OTP2_START_IDX = 368
         const val OTP2_END_IDX = 375
+
+        // DEVICE
+        const val VITAL_POINTS_CURRENT_IDX = 160
+        const val FIMRWARE_VERSION_IDX = 380
 
 
     }
@@ -94,6 +101,7 @@ class BENfcDataTranslator(
         beCharacter.dimId.toByteArray(bytes, DIM_ID_IDX, ByteOrder.BIG_ENDIAN)
         bytes[PHASE_IDX] = beCharacter.phase
         bytes[ATTRIBUTE_IDX] = beCharacter.attribute.ordinal.toByte()
+        bytes[AGE_IN_DAYS_IDX] = beCharacter.ageInDays
         beCharacter.getTrainingPp().toByteArray(bytes, TRAINING_PP_IDX, ByteOrder.BIG_ENDIAN)
         beCharacter.currentPhaseBattlesWon.toByteArray(bytes,
             CURRENT_BATTLES_WON_IDX, ByteOrder.BIG_ENDIAN)
@@ -104,6 +112,7 @@ class BENfcDataTranslator(
         beCharacter.totalBattlesLost.toByteArray(bytes,
             TOTAL_BATTLES_LOST_IDX, ByteOrder.BIG_ENDIAN)
         bytes[WIN_PCT_IDX] = beCharacter.getWinPercentage()
+        bytes[ADVENTURE_MISSION_STAGE_IDX] = beCharacter.adventureMissionStage
         bytes[MOOD_IDX] = beCharacter.mood
         bytes[ACTIVITY_LEVEL_IDX] = beCharacter.activityLevel
         bytes[HEART_RATE_CURRENT_IDX] = beCharacter.heartRateCurrent.toByte()
@@ -116,8 +125,6 @@ class BENfcDataTranslator(
         bytes[ITEM_EFFECT_VITAL_POINTS_CHANGE_MINUTES_REMAINING_IDX] = beCharacter.itemEffectVitalPointsChangeMinutesRemaining
         beCharacter.transformationCountdown.toByteArray(bytes,
             TRANSFORMATION_COUNT_DOWN_IDX, ByteOrder.BIG_ENDIAN)
-        beCharacter.vitalPoints.toByteArray(bytes,
-            VITAL_POINTS_CURRENT_IDX, ByteOrder.BIG_ENDIAN)
         transformationHistoryToByteArray(beCharacter.transformationHistory, bytes)
         beCharacter.trainingHp.toByteArray(bytes, TRAINING_HP_IDX, ByteOrder.BIG_ENDIAN)
         beCharacter.trainingAp.toByteArray(bytes, TRAINING_AP_IDX, ByteOrder.BIG_ENDIAN)
@@ -134,6 +141,8 @@ class BENfcDataTranslator(
         bytes[ITEM_REMAINING_TIME_IDX] = beCharacter.itemRemainingTime
         beCharacter.otp0.copyInto(bytes, OTP_START_IDX, 0, beCharacter.otp0.size)
         beCharacter.otp1.copyInto(bytes, OTP2_START_IDX, 0, beCharacter.otp1.size)
+        bytes[CHARACTER_CREATION_FIRMWARE_VERSION_IDX] = beCharacter.characterCreationFirmwareVersion.majorVersion
+        bytes[CHARACTER_CREATION_FIRMWARE_VERSION_IDX+1] = beCharacter.characterCreationFirmwareVersion.minorVersion
     }
 
     // finalizeByteArrayFormat finalizes the byte array for BE NFC format by setting all the
@@ -157,11 +166,13 @@ class BENfcDataTranslator(
             dimId = bytes.getUInt16(DIM_ID_IDX, ByteOrder.BIG_ENDIAN),
             phase = bytes[PHASE_IDX],
             attribute = NfcCharacter.Attribute.entries[bytes[ATTRIBUTE_IDX].toInt()],
+            ageInDays = bytes[AGE_IN_DAYS_IDX],
             trainingPp = bytes.getUInt16(TRAINING_PP_IDX, ByteOrder.BIG_ENDIAN),
             currentPhaseBattlesWon = bytes.getUInt16(CURRENT_BATTLES_WON_IDX, ByteOrder.BIG_ENDIAN),
             currentPhaseBattlesLost = bytes.getUInt16(CURRENT_BATTLES_LOST_IDX, ByteOrder.BIG_ENDIAN),
             totalBattlesWon = bytes.getUInt16(TOTAL_BATTLES_WON_IDX, ByteOrder.BIG_ENDIAN),
             totalBattlesLost = bytes.getUInt16(TOTAL_BATTLES_LOST_IDX, ByteOrder.BIG_ENDIAN),
+            adventureMissionStage = bytes[ADVENTURE_MISSION_STAGE_IDX],
             mood = bytes[MOOD_IDX],
             activityLevel = bytes[ACTIVITY_LEVEL_IDX],
             heartRateCurrent = bytes[HEART_RATE_CURRENT_IDX].toUByte(),
@@ -188,6 +199,9 @@ class BENfcDataTranslator(
             itemRemainingTime = bytes[ITEM_REMAINING_TIME_IDX],
             otp0 = bytes.sliceArray(OTP_START_IDX..OTP_END_IDX),
             otp1 = bytes.sliceArray(OTP2_START_IDX..OTP2_END_IDX),
+            characterCreationFirmwareVersion = FirmwareVersion(
+                majorVersion = bytes[CHARACTER_CREATION_FIRMWARE_VERSION_IDX],
+                minorVersion = bytes[CHARACTER_CREATION_FIRMWARE_VERSION_IDX+1]),
         )
     }
 
