@@ -2,6 +2,7 @@ package com.github.cfogrady.vbnfc.be
 
 import android.util.Log
 import com.github.cfogrady.vbnfc.ChecksumCalculator
+import com.github.cfogrady.vbnfc.CryptographicTransformer
 import com.github.cfogrady.vbnfc.NfcDataTranslator
 import com.github.cfogrady.vbnfc.TagCommunicator
 import com.github.cfogrady.vbnfc.copyIntoUShortArray
@@ -12,7 +13,13 @@ import com.github.cfogrady.vbnfc.getUInt16
 import com.github.cfogrady.vbnfc.toByteArray
 import java.nio.ByteOrder
 
-class BENfcDataTranslator(private val checksumCalculator: ChecksumCalculator = ChecksumCalculator()) : NfcDataTranslator {
+class BENfcDataTranslator(
+    private val secrets: CryptographicTransformer.Secrets,
+    private val checksumCalculator: ChecksumCalculator = ChecksumCalculator()
+): NfcDataTranslator {
+
+    override val cryptographicTransformer = CryptographicTransformer(secrets)
+
     companion object {
 
         const val OPERATION_PAGE: Byte = 0x6

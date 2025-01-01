@@ -1,14 +1,9 @@
 package com.github.cfogrady.vbnfc.data
 
-enum class DeviceType(val typeId: UShort) {
-    VitalSeries(2u),
-    VitalCharacters(3u),
-    VitalBraceletBE(4u);
-
+class DeviceType {
     companion object {
-        @JvmStatic
-        fun fromTypeId(typeId: UShort): DeviceType {
-            return DeviceType.entries[typeId.toInt()-2]
-        }
+        const val VitalSeriesDeviceType: UShort = 2u
+        const val VitalCharactersDeviceType: UShort = 3u
+        const val VitalBraceletBEDeviceType: UShort = 4u
     }
 }

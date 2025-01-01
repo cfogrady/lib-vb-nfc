@@ -25,4 +25,6 @@ interface NfcDataTranslator {
     // parseHeader parses the nfc header byte array into an instance of NfcHeader
     fun parseHeader(headerBytes: ByteArray): NfcHeader
 
+    val cryptographicTransformer: CryptographicTransformer
+
 }
