@@ -48,11 +48,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         deviceToCryptographicTransformers = getMapOfCryptographicTransformers()
@@ -87,7 +82,7 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         Button(onClick = {
-                            handleTag() {
+                            handleTag {
                                 val character = it.receiveCharacter()
                                 nfcCharacter.value = character
                                 phase=character.phase.toString()
@@ -98,7 +93,7 @@ class MainActivity : ComponentActivity() {
                             Text(text = "Read Character")
                         }
                         Button(onClick = {
-                            handleTag() {
+                            handleTag {
                                 nfcCharacter.value?.let { character ->
                                     Log.i("MainActivity", "Set Prepare dim for ${character.dimId}")
                                     it.prepareDIMForCharacter(character.dimId)
@@ -109,7 +104,7 @@ class MainActivity : ComponentActivity() {
                             Text(text = "Prepare Device For DIM")
                         }
                         Button(onClick = {
-                            handleTag() {
+                            handleTag {
                                 nfcCharacter.value?.let {character ->
                                     character.phase = phase.toByte()
                                     character.charIndex = charIndex.toUShort()
@@ -127,7 +122,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun getMapOfCryptographicTransformers(): Map<UShort, CryptographicTransformer> {
+    private fun getMapOfCryptographicTransformers(): Map<UShort, CryptographicTransformer> {
         return mapOf(
             Pair(DeviceType.VitalBraceletBEDeviceType,
                 CryptographicTransformer(salt1 = resources.getString(R.string.password1),
