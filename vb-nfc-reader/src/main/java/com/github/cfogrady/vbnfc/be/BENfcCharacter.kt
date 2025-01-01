@@ -1,4 +1,6 @@
-package com.github.cfogrady.vbnfc.data
+package com.github.cfogrady.vbnfc.be
+
+import com.github.cfogrady.vbnfc.data.NfcCharacter
 
 class BENfcCharacter(
     dimId: UShort,
@@ -41,22 +43,22 @@ class BENfcCharacter(
     var appReserved2: Array<UShort>, // this is a 3 element array reserved for new app features, a custom app should be able to safely use this for custom features
 ) :
     NfcCharacter(
-        dimId,
-        charIndex,
-        phase,
-        attribute,
-        mood,
-        vitalPoints,
-        transformationCountdown,
-        injuryStatus,
-        trainingPp,
-        currentPhaseBattlesWon,
-        currentPhaseBattlesLost,
-        totalBattlesWon,
-        totalBattlesLost,
-        activityLevel,
-        heartRateCurrent,
-        transformationHistory
+        dimId = dimId,
+        charIndex = charIndex,
+        phase = phase,
+        attribute = attribute,
+        mood =mood,
+        vitalPoints = vitalPoints,
+        transformationCountdown = transformationCountdown,
+        injuryStatus = injuryStatus,
+        trophies = trainingPp,
+        currentPhaseBattlesWon = currentPhaseBattlesWon,
+        currentPhaseBattlesLost = currentPhaseBattlesLost,
+        totalBattlesWon = totalBattlesWon,
+        totalBattlesLost = totalBattlesLost,
+        activityLevel = activityLevel,
+        heartRateCurrent = heartRateCurrent,
+        transformationHistory = transformationHistory,
     )
 {
     fun getTrainingPp(): UShort {

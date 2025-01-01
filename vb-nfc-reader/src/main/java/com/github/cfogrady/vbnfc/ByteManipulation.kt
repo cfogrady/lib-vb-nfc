@@ -68,3 +68,11 @@ fun UShort.toByteArray(bytes: ByteArray, dstIndex: Int, byteOrder: ByteOrder = B
         }
     }
 }
+
+fun ByteArray.copyIntoUShortArray(offset: Int, length: Int): Array<UShort> {
+    val result = Array<UShort>(length) { 0u }
+    for (i in 0..<length) {
+        result[i] = this.getUInt16(offset + i * 2, ByteOrder.BIG_ENDIAN)
+    }
+    return result
+}

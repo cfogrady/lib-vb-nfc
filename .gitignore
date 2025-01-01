@@ -36,3 +36,5 @@ google-services.json
 keys.xml
 
 vb-nfc-reader/src/test/java/com/github/cfogrady/vbnfc/Secret.kt
+
+vb-nfc-reader/src/test/java/com/github/cfogrady/vbnfc/VBBECryptographicTransformer.kt
