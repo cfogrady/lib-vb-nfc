@@ -10,10 +10,13 @@ import kotlin.experimental.xor
 
 class CryptographicTransformer(private val salt1: String, private val salt2: String, private val decryptionKey: String, private val substitutionCipher: IntArray) {
 
+    companion object {
+        const val HMAC256 = "HmacSHA256"
+    }
+
     // Creates a 4 byte password by hashing the current data using HMAC256 with the first key. Then
     // applying a 4-bit substitution cypher on the result, and hashing again with the second key.
     // The password are the 4 bytes starting at index 28 of that result.
-    @OptIn(ExperimentalStdlibApi::class)
     fun createNfcPassword(inputData: ByteArray): ByteArray {
         val salt1 = decryptSalt(salt1)
         val salt2 = decryptSalt(salt2)
@@ -54,8 +57,8 @@ class CryptographicTransformer(private val salt1: String, private val salt2: Str
 
     private fun generateHMacSHA256Hash(salt: String, data: ByteArray): ByteArray {
         val saltBytes = salt.toByteArray(StandardCharsets.US_ASCII)
-        val secretKeySpec = SecretKeySpec(saltBytes, "HMacSHA256")
-        val mac = Mac.getInstance("HMacSHA256")
+        val secretKeySpec = SecretKeySpec(saltBytes, HMAC256)
+        val mac = Mac.getInstance(HMAC256)
         mac.init(secretKeySpec)
         return mac.doFinal(data)
     }
@@ -63,7 +66,7 @@ class CryptographicTransformer(private val salt1: String, private val salt2: Str
     // This is a 4 bit substitution cipher, where each 4 bits act as an index to another 4 bits
     private fun apply4BitSubstitutionCipher(data: ByteArray): ByteArray {
         val result = ByteArray(data.size)
-        for (idx in 0..<data.size) {
+        for (idx in data.indices) {
             val byte: Int = data[idx].toInt()
             var newByte = 0
             for (fourBitShifts in 0..<2) { // perform one OR without shift, and one OR shifted 4 bits

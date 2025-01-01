@@ -32,8 +32,6 @@ class TagCommunicator(
         const val START_DATA_PAGE = 8
         const val LAST_DATA_PAGE = 220 // technically 223, but we read 4 pages at a time.
 
-        const val HMAC256 = "HmacSHA256"
-
         fun getInstance(nfcData: NfcA, deviceTypeIdSecrets: Map<UShort, CryptographicTransformer>): TagCommunicator {
             val checksumCalculator = ChecksumCalculator()
             val deviceToTranslator = HashMap<UShort, NfcDataTranslator>()
