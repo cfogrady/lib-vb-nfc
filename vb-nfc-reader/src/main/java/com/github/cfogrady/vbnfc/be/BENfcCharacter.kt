@@ -8,7 +8,7 @@ class BENfcCharacter(
     phase: Byte,
     attribute: Attribute,
     ageInDays: Byte,
-    adventureMissionStage: Byte,
+    nextAdventureMissionStage: Byte,
     mood: Byte,
     vitalPoints: UShort,
     transformationCountdown: UShort,
@@ -51,7 +51,7 @@ class BENfcCharacter(
         phase = phase,
         attribute = attribute,
         ageInDays = ageInDays,
-        adventureMissionStage = adventureMissionStage,
+        nextAdventureMissionStage = nextAdventureMissionStage,
         mood = mood,
         vitalPoints = vitalPoints,
         transformationCountdown = transformationCountdown,
@@ -92,7 +92,7 @@ class BENfcCharacter(
     age: $ageInDays
     mood: $mood,
     creationFirmwareVersion: $characterCreationFirmwareVersion
-    adventureMissionStage: $adventureMissionStage
+    nextAdventureMissionStage: $nextAdventureMissionStage
     vitalPoints: $vitalPoints,
     transformationCountdown: $transformationCountdown,
     injuryStatus: $injuryStatus,

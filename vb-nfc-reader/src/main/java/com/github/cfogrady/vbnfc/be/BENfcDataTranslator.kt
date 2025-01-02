@@ -41,7 +41,7 @@ class BENfcDataTranslator(
         const val TOTAL_BATTLES_LOST_IDX = 104
         const val WIN_PCT_IDX = 106 // unused
         const val CHARACTER_CREATION_FIRMWARE_VERSION_IDX = 108
-        const val ADVENTURE_MISSION_STAGE_IDX = 128
+        const val NEXT_ADVENTURE_MISSION_STAGE_IDX = 128
         const val MOOD_IDX = 129
         const val ACTIVITY_LEVEL_IDX = 130
         const val HEART_RATE_CURRENT_IDX = 131
@@ -112,7 +112,7 @@ class BENfcDataTranslator(
         beCharacter.totalBattlesLost.toByteArray(bytes,
             TOTAL_BATTLES_LOST_IDX, ByteOrder.BIG_ENDIAN)
         bytes[WIN_PCT_IDX] = beCharacter.getWinPercentage()
-        bytes[ADVENTURE_MISSION_STAGE_IDX] = beCharacter.adventureMissionStage
+        bytes[NEXT_ADVENTURE_MISSION_STAGE_IDX] = beCharacter.nextAdventureMissionStage
         bytes[MOOD_IDX] = beCharacter.mood
         bytes[ACTIVITY_LEVEL_IDX] = beCharacter.activityLevel
         bytes[HEART_RATE_CURRENT_IDX] = beCharacter.heartRateCurrent.toByte()
@@ -172,7 +172,7 @@ class BENfcDataTranslator(
             currentPhaseBattlesLost = bytes.getUInt16(CURRENT_BATTLES_LOST_IDX, ByteOrder.BIG_ENDIAN),
             totalBattlesWon = bytes.getUInt16(TOTAL_BATTLES_WON_IDX, ByteOrder.BIG_ENDIAN),
             totalBattlesLost = bytes.getUInt16(TOTAL_BATTLES_LOST_IDX, ByteOrder.BIG_ENDIAN),
-            adventureMissionStage = bytes[ADVENTURE_MISSION_STAGE_IDX],
+            nextAdventureMissionStage = bytes[NEXT_ADVENTURE_MISSION_STAGE_IDX],
             mood = bytes[MOOD_IDX],
             activityLevel = bytes[ACTIVITY_LEVEL_IDX],
             heartRateCurrent = bytes[HEART_RATE_CURRENT_IDX].toUByte(),
