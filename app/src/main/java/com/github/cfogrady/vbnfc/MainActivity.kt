@@ -129,16 +129,16 @@ class MainActivity : ComponentActivity() {
                     salt2 = resources.getString(R.string.password2),
                     decryptionKey = resources.getString(R.string.decryptionKey),
                     substitutionCipher = resources.getIntArray(R.array.substitutionArray))),
-            Pair(DeviceType.VitalSeriesDeviceType,
-                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
-                    salt2 = resources.getString(R.string.password2),
-                    decryptionKey = resources.getString(R.string.decryptionKey),
-                    substitutionCipher = resources.getIntArray(R.array.substitutionArray))),
-            Pair(DeviceType.VitalCharactersDeviceType,
-                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
-                    salt2 = resources.getString(R.string.password2),
-                    decryptionKey = resources.getString(R.string.decryptionKey),
-                    substitutionCipher = resources.getIntArray(R.array.substitutionArray)))
+//            Pair(DeviceType.VitalSeriesDeviceType,
+//                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
+//                    salt2 = resources.getString(R.string.password2),
+//                    decryptionKey = resources.getString(R.string.decryptionKey),
+//                    substitutionCipher = resources.getIntArray(R.array.substitutionArray))),
+//            Pair(DeviceType.VitalCharactersDeviceType,
+//                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
+//                    salt2 = resources.getString(R.string.password2),
+//                    decryptionKey = resources.getString(R.string.decryptionKey),
+//                    substitutionCipher = resources.getIntArray(R.array.substitutionArray)))
         )
     }
 
