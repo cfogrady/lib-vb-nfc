@@ -53,4 +53,15 @@ open class NfcCharacter(
         InjuryThreeHealed,
         InjuryFour,
     }
+
+    fun getTransformationHistoryString(separator: String): String {
+        val builder = StringBuilder()
+        for(i in transformationHistory.indices) {
+            builder.append(transformationHistory[i])
+            if(i != transformationHistory.size-1) {
+                builder.append(separator)
+            }
+        }
+        return builder.toString()
+    }
 }
