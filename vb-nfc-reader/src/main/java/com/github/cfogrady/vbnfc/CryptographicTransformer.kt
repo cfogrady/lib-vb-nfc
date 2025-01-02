@@ -8,7 +8,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
 
-class CryptographicTransformer(private val hmacKey1: String, private val hmacKey2: String, private val aesKey: String, private val substitutionCipher: IntArray) {
+class CryptographicTransformer(private val readableHmacKey1: String, private val readableHmacKey2: String, private val aesKey: String, private val substitutionCipher: IntArray) {
 
     companion object {
         const val HMAC256 = "HmacSHA256"
@@ -18,8 +18,8 @@ class CryptographicTransformer(private val hmacKey1: String, private val hmacKey
     // applying a 4-bit substitution cypher on the result, and hashing again with the second key.
     // The password are the 4 bytes starting at index 28 of that result.
     fun createNfcPassword(inputData: ByteArray): ByteArray {
-        val hmacKey1 = decryptHmacKey(hmacKey1)
-        val hmacKey2 = decryptHmacKey(hmacKey2)
+        val hmacKey1 = decryptHmacKey(readableHmacKey1)
+        val hmacKey2 = decryptHmacKey(readableHmacKey2)
         val hashedInput = generateHMacSHA256Hash(hmacKey1, inputData)
         val substitutedBytes = apply4BitSubstitutionCipher(hashedInput)
         val secondHash = generateHMacSHA256Hash(hmacKey2, substitutedBytes)
@@ -27,14 +27,14 @@ class CryptographicTransformer(private val hmacKey1: String, private val hmacKey
     }
 
     fun decryptData(data: ByteArray, tagId: ByteArray): ByteArray {
-        val hmacKey1 = decryptHmacKey(hmacKey1)
-        val hmacKey2 = decryptHmacKey(hmacKey2)
+        val hmacKey1 = decryptHmacKey(readableHmacKey1)
+        val hmacKey2 = decryptHmacKey(readableHmacKey2)
         return cryptoTransformation(Cipher.DECRYPT_MODE, data, tagId, hmacKey1, hmacKey2)
     }
 
     fun encryptData(data: ByteArray, tagId: ByteArray): ByteArray {
-        val hmacKey1 = decryptHmacKey(hmacKey1)
-        val hmacKey2 = decryptHmacKey(hmacKey2)
+        val hmacKey1 = decryptHmacKey(readableHmacKey1)
+        val hmacKey2 = decryptHmacKey(readableHmacKey2)
         return cryptoTransformation(Cipher.ENCRYPT_MODE, data, tagId, hmacKey1, hmacKey2)
     }
 

@@ -125,8 +125,8 @@ class MainActivity : ComponentActivity() {
     private fun getMapOfCryptographicTransformers(): Map<UShort, CryptographicTransformer> {
         return mapOf(
             Pair(DeviceType.VitalBraceletBEDeviceType,
-                CryptographicTransformer(hmacKey1 = resources.getString(R.string.password1),
-                    hmacKey2 = resources.getString(R.string.password2),
+                CryptographicTransformer(readableHmacKey1 = resources.getString(R.string.password1),
+                    readableHmacKey2 = resources.getString(R.string.password2),
                     aesKey = resources.getString(R.string.decryptionKey),
                     substitutionCipher = resources.getIntArray(R.array.substitutionArray))),
 //            Pair(DeviceType.VitalSeriesDeviceType,
