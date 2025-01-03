@@ -4,23 +4,23 @@ import java.util.Objects
 
 open class NfcCharacter(
     val dimId: UShort,
-    var charIndex: UShort,
-    var stage: Byte,
-    var attribute: Attribute,
-    var ageInDays: Byte,
-    var nextAdventureMissionStage: Byte, // next adventure mission stage on the character's dim
-    var mood: Byte,
-    var vitalPoints: UShort,
-    var transformationCountdown: UShort,
-    var injuryStatus: InjuryStatus,
-    var trophies: UShort,
-    var currentPhaseBattlesWon: UShort,
-    var currentPhaseBattlesLost: UShort,
-    var totalBattlesWon: UShort,
-    var totalBattlesLost: UShort,
-    var activityLevel: Byte,
-    var heartRateCurrent: UByte,
-    var transformationHistory: Array<Transformation>
+    var charIndex: UShort = 0u,
+    var stage: Byte = 0,
+    var attribute: Attribute = Attribute.None,
+    var ageInDays: Byte = 0,
+    var nextAdventureMissionStage: Byte = 1, // next adventure mission stage on the character's dim
+    var mood: Byte = 50,
+    var vitalPoints: UShort = 0u,
+    var transformationCountdown: UShort = 0u,
+    var injuryStatus: InjuryStatus = InjuryStatus.None,
+    var trophies: UShort = 0u,
+    var currentPhaseBattlesWon: UShort = 0u,
+    var currentPhaseBattlesLost: UShort = 0u,
+    var totalBattlesWon: UShort = 0u,
+    var totalBattlesLost: UShort = 0u,
+    var activityLevel: Byte = 0,
+    var heartRateCurrent: UByte = 0u,
+    var transformationHistory: Array<Transformation> = Array(8) {Transformation(-1, -1, -1, -1)}
 ) {
 
     data class Transformation(
