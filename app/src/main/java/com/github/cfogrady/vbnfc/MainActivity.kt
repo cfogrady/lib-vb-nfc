@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
                             handleTag {
                                 val character = it.receiveCharacter()
                                 nfcCharacter.value = character
-                                phase=character.phase.toString()
+                                phase=character.stage.toString()
                                 charIndex=character.charIndex.toString()
                                 "Done reading character"
                             }
@@ -106,7 +106,7 @@ class MainActivity : ComponentActivity() {
                         Button(onClick = {
                             handleTag {
                                 nfcCharacter.value?.let {character ->
-                                    character.phase = phase.toByte()
+                                    character.stage = phase.toByte()
                                     character.charIndex = charIndex.toUShort()
                                     it.sendCharacter(character)
                                 }
@@ -125,18 +125,18 @@ class MainActivity : ComponentActivity() {
     private fun getMapOfCryptographicTransformers(): Map<UShort, CryptographicTransformer> {
         return mapOf(
             Pair(DeviceType.VitalBraceletBEDeviceType,
-                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
-                    salt2 = resources.getString(R.string.password2),
-                    decryptionKey = resources.getString(R.string.decryptionKey),
+                CryptographicTransformer(readableHmacKey1 = resources.getString(R.string.password1),
+                    readableHmacKey2 = resources.getString(R.string.password2),
+                    aesKey = resources.getString(R.string.decryptionKey),
                     substitutionCipher = resources.getIntArray(R.array.substitutionArray))),
 //            Pair(DeviceType.VitalSeriesDeviceType,
-//                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
-//                    salt2 = resources.getString(R.string.password2),
+//                CryptographicTransformer(hmacKey1 = resources.getString(R.string.password1),
+//                    hmacKey2 = resources.getString(R.string.password2),
 //                    decryptionKey = resources.getString(R.string.decryptionKey),
 //                    substitutionCipher = resources.getIntArray(R.array.substitutionArray))),
 //            Pair(DeviceType.VitalCharactersDeviceType,
-//                CryptographicTransformer(salt1 = resources.getString(R.string.password1),
-//                    salt2 = resources.getString(R.string.password2),
+//                CryptographicTransformer(hmacKey1 = resources.getString(R.string.password1),
+//                    hmacKey2 = resources.getString(R.string.password2),
 //                    decryptionKey = resources.getString(R.string.decryptionKey),
 //                    substitutionCipher = resources.getIntArray(R.array.substitutionArray)))
         )

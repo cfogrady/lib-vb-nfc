@@ -8,7 +8,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
 
-class CryptographicTransformer(private val salt1: String, private val salt2: String, private val decryptionKey: String, private val substitutionCipher: IntArray) {
+class CryptographicTransformer(private val readableHmacKey1: String, private val readableHmacKey2: String, private val aesKey: String, private val substitutionCipher: IntArray) {
 
     companion object {
         const val HMAC256 = "HmacSHA256"
@@ -18,29 +18,29 @@ class CryptographicTransformer(private val salt1: String, private val salt2: Str
     // applying a 4-bit substitution cypher on the result, and hashing again with the second key.
     // The password are the 4 bytes starting at index 28 of that result.
     fun createNfcPassword(inputData: ByteArray): ByteArray {
-        val salt1 = decryptSalt(salt1)
-        val salt2 = decryptSalt(salt2)
-        val hashedInput = generateHMacSHA256Hash(salt1, inputData)
+        val hmacKey1 = decryptHmacKey(readableHmacKey1)
+        val hmacKey2 = decryptHmacKey(readableHmacKey2)
+        val hashedInput = generateHMacSHA256Hash(hmacKey1, inputData)
         val substitutedBytes = apply4BitSubstitutionCipher(hashedInput)
-        val secondHash = generateHMacSHA256Hash(salt2, substitutedBytes)
+        val secondHash = generateHMacSHA256Hash(hmacKey2, substitutedBytes)
         return secondHash.sliceArray(28..<32)
     }
 
     fun decryptData(data: ByteArray, tagId: ByteArray): ByteArray {
-        val salt1 = decryptSalt(salt1)
-        val salt2 = decryptSalt(salt2)
-        return cryptoTransformation(Cipher.DECRYPT_MODE, data, tagId, salt1, salt2)
+        val hmacKey1 = decryptHmacKey(readableHmacKey1)
+        val hmacKey2 = decryptHmacKey(readableHmacKey2)
+        return cryptoTransformation(Cipher.DECRYPT_MODE, data, tagId, hmacKey1, hmacKey2)
     }
 
     fun encryptData(data: ByteArray, tagId: ByteArray): ByteArray {
-        val salt1 = decryptSalt(salt1)
-        val salt2 = decryptSalt(salt2)
-        return cryptoTransformation(Cipher.ENCRYPT_MODE, data, tagId, salt1, salt2)
+        val hmacKey1 = decryptHmacKey(readableHmacKey1)
+        val hmacKey2 = decryptHmacKey(readableHmacKey2)
+        return cryptoTransformation(Cipher.ENCRYPT_MODE, data, tagId, hmacKey1, hmacKey2)
     }
 
-    private fun decryptSalt(str: String): String {
+    private fun decryptHmacKey(str: String): String {
         val decoded = Base64.getDecoder().decode(str)
-        val decrypt = decryptAesCbcPkcs5Padding(decryptionKey, decoded)
+        val decrypt = decryptAesCbcPkcs5Padding(aesKey, decoded)
         return String(decrypt, StandardCharsets.UTF_8)
     }
 
@@ -55,9 +55,9 @@ class CryptographicTransformer(private val salt1: String, private val salt2: Str
         return cipher.doFinal(data)
     }
 
-    private fun generateHMacSHA256Hash(salt: String, data: ByteArray): ByteArray {
-        val saltBytes = salt.toByteArray(StandardCharsets.US_ASCII)
-        val secretKeySpec = SecretKeySpec(saltBytes, HMAC256)
+    private fun generateHMacSHA256Hash(hmacKey: String, data: ByteArray): ByteArray {
+        val hmacKeyBytes = hmacKey.toByteArray(StandardCharsets.US_ASCII)
+        val secretKeySpec = SecretKeySpec(hmacKeyBytes, HMAC256)
         val mac = Mac.getInstance(HMAC256)
         mac.init(secretKeySpec)
         return mac.doFinal(data)
@@ -81,9 +81,9 @@ class CryptographicTransformer(private val salt1: String, private val salt2: Str
 
     // Hashes the tagId once and applies substitution cipher. Then hashes again.
     // Splits hash and original tagId into key and initialization vector
-    private fun cryptoTransformation(cipherMode: Int, data: ByteArray, tagId: ByteArray, salt1: String, salt2: String): ByteArray {
-        var hashedTagId = apply4BitSubstitutionCipher(generateHMacSHA256Hash(salt1, tagId))
-        hashedTagId = generateHMacSHA256Hash(salt2, hashedTagId) // second hash
+    private fun cryptoTransformation(cipherMode: Int, data: ByteArray, tagId: ByteArray, hmacKey1: String, hmacKey2: String): ByteArray {
+        var hashedTagId = apply4BitSubstitutionCipher(generateHMacSHA256Hash(hmacKey1, tagId))
+        hashedTagId = generateHMacSHA256Hash(hmacKey2, hashedTagId) // second hash
 
         // generate actual key and initializing vector from tagIdGeneratedKey
         val iv1 = ByteArray(15)

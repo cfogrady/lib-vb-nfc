@@ -1,17 +1,19 @@
 package com.github.cfogrady.vbnfc.be
 
 import com.github.cfogrady.vbnfc.data.NfcCharacter
+import java.util.Arrays
+import java.util.Objects
 
 class BENfcCharacter(
     dimId: UShort,
     charIndex: UShort,
-    phase: Byte,
+    stage: Byte,
     attribute: Attribute,
     ageInDays: Byte,
     nextAdventureMissionStage: Byte,
     mood: Byte,
     vitalPoints: UShort,
-    transformationCountdown: UShort,
+    transformationCountdownInMinutes: UShort,
     injuryStatus: InjuryStatus,
     trainingPp: UShort,
     currentPhaseBattlesWon: UShort,
@@ -24,7 +26,7 @@ class BENfcCharacter(
     var trainingHp: UShort,
     var trainingAp: UShort,
     var trainingBp: UShort,
-    var remainingTrainingTime: UShort,
+    var remainingTrainingTimeInMinutes: UShort,
     var itemEffectMentalStateValue: Byte,
     var itemEffectMentalStateMinutesRemaining: Byte,
     var itemEffectActivityLevelValue: Byte,
@@ -48,13 +50,13 @@ class BENfcCharacter(
     NfcCharacter(
         dimId = dimId,
         charIndex = charIndex,
-        phase = phase,
+        stage = stage,
         attribute = attribute,
         ageInDays = ageInDays,
         nextAdventureMissionStage = nextAdventureMissionStage,
         mood = mood,
         vitalPoints = vitalPoints,
-        transformationCountdown = transformationCountdown,
+        transformationCountdown = transformationCountdownInMinutes,
         injuryStatus = injuryStatus,
         trophies = trainingPp,
         currentPhaseBattlesWon = currentPhaseBattlesWon,
@@ -82,51 +84,100 @@ class BENfcCharacter(
         return ((100u * currentPhaseBattlesWon) / totalBatles).toByte()
     }
 
+
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BENfcCharacter
+        if(!super.equals(other)) return false
+
+        if (trainingHp != other.trainingHp) return false
+        if (trainingAp != other.trainingAp) return false
+        if (trainingBp != other.trainingBp) return false
+        if (remainingTrainingTimeInMinutes != other.remainingTrainingTimeInMinutes) return false
+        if (itemEffectMentalStateValue != other.itemEffectMentalStateValue) return false
+        if (itemEffectMentalStateMinutesRemaining != other.itemEffectMentalStateMinutesRemaining) return false
+        if (itemEffectActivityLevelValue != other.itemEffectActivityLevelValue) return false
+        if (itemEffectActivityLevelMinutesRemaining != other.itemEffectActivityLevelMinutesRemaining) return false
+        if (itemEffectVitalPointsChangeValue != other.itemEffectVitalPointsChangeValue) return false
+        if (itemEffectVitalPointsChangeMinutesRemaining != other.itemEffectVitalPointsChangeMinutesRemaining) return false
+        if (abilityRarity != other.abilityRarity) return false
+        if (abilityType != other.abilityType) return false
+        if (abilityBranch != other.abilityBranch) return false
+        if (abilityReset != other.abilityReset) return false
+        if (rank != other.rank) return false
+        if (itemType != other.itemType) return false
+        if (itemMultiplier != other.itemMultiplier) return false
+        if (itemRemainingTime != other.itemRemainingTime) return false
+        if (!otp0.contentEquals(other.otp0)) return false
+        if (!otp1.contentEquals(other.otp1)) return false
+        if (characterCreationFirmwareVersion != other.characterCreationFirmwareVersion) return false
+        if (!appReserved1.contentEquals(other.appReserved1)) return false
+        if (!appReserved2.contentEquals(other.appReserved2)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(
+            super.hashCode(),
+            trainingHp,
+            trainingAp,
+            trainingBp,
+            remainingTrainingTimeInMinutes,
+            itemEffectMentalStateValue,
+            itemEffectMentalStateMinutesRemaining,
+            itemEffectActivityLevelValue,
+            itemEffectActivityLevelMinutesRemaining,
+            itemEffectVitalPointsChangeValue,
+            itemEffectVitalPointsChangeMinutesRemaining,
+            abilityRarity,
+            abilityType,
+            abilityBranch,
+            abilityReset,
+            rank,
+            itemType,
+            itemMultiplier,
+            itemRemainingTime,
+            otp0.contentHashCode(),
+            otp1.contentHashCode(),
+            characterCreationFirmwareVersion,
+            appReserved1.contentHashCode(),
+            appReserved2.contentHashCode())
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String {
         return """
-    dimId: $dimId,
-    charIndex: $charIndex,
-    phase: $phase,
-    attribute: $attribute,
-    age: $ageInDays
-    mood: $mood,
-    creationFirmwareVersion: $characterCreationFirmwareVersion
-    nextAdventureMissionStage: $nextAdventureMissionStage
-    vitalPoints: $vitalPoints,
-    transformationCountdown: $transformationCountdown,
-    injuryStatus: $injuryStatus,
-    trainingPp: $trophies,
-    currentPhaseBattlesWon: $currentPhaseBattlesWon,
-    currentPhaseBattlesLost: $currentPhaseBattlesLost,
-    totalBattlesWon: $totalBattlesWon,
-    totalBattlesLost: $totalBattlesLost,
-    activityLevel: $activityLevel,
-    heartRateCurrent: $heartRateCurrent,
-    transformationHistory:
-      ${getTransformationHistoryString(separator = "\n      ")},
-    trainingHp: $trainingHp,
-    trainingAp: $trainingAp,
-    trainingBp: $trainingBp,
-    remainingTrainingTime: $remainingTrainingTime,
-    itemEffectMentalStateValue: $itemEffectMentalStateValue,
-    itemEffectMentalStateMinutesRemaining: $itemEffectMentalStateMinutesRemaining,
-    itemEffectActivityLevelValue: $itemEffectActivityLevelValue,
-    itemEffectActivityLevelMinutesRemaining: $itemEffectActivityLevelMinutesRemaining,
-    itemEffectVitalPointsChangeValue: $itemEffectVitalPointsChangeValue,
-    itemEffectVitalPointsChangeMinutesRemaining: $itemEffectVitalPointsChangeMinutesRemaining,
-    abilityRarity: $abilityRarity,
-    abilityType: $abilityType,
-    abilityBranch: $abilityBranch,
-    abilityReset: $abilityReset,
-    rank: $rank,
-    itemType: $itemType,
-    itemMultiplier: $itemMultiplier,
-    itemRemainingTime: $itemRemainingTime,
-    otp0: ${otp0.toHexString()}
-    otp1: ${otp1.toHexString()}
-    appReserved1: ${appReserved1.toHexString()}
-    appReserved2: $appReserved2
-        """.trimIndent()
+${super.toString()}
+BENfcCharacter(
+    trainingHp=$trainingHp,
+    trainingAp=$trainingAp,
+    trainingBp=$trainingBp,
+    remainingTrainingTimeInMinutes=$remainingTrainingTimeInMinutes,
+    itemEffectMentalStateValue=$itemEffectMentalStateValue,
+    itemEffectMentalStateMinutesRemaining=$itemEffectMentalStateMinutesRemaining,
+    itemEffectActivityLevelValue=$itemEffectActivityLevelValue,
+    itemEffectActivityLevelMinutesRemaining=$itemEffectActivityLevelMinutesRemaining,
+    itemEffectVitalPointsChangeValue=$itemEffectVitalPointsChangeValue,
+    itemEffectVitalPointsChangeMinutesRemaining=$itemEffectVitalPointsChangeMinutesRemaining,
+    abilityRarity=$abilityRarity,
+    abilityType=$abilityType,
+    abilityBranch=$abilityBranch,
+    abilityReset=$abilityReset,
+    rank=$rank,
+    itemType=$itemType,
+    itemMultiplier=$itemMultiplier,
+    itemRemainingTime=$itemRemainingTime,
+    otp0=${otp0.toHexString()},
+    otp1=${otp1.toHexString()},
+    characterCreationFirmwareVersion=$characterCreationFirmwareVersion,
+    appReserved1=${appReserved1.contentToString()},
+    appReserved2=${appReserved2.contentToString()}
+)"""
     }
+
+
 }

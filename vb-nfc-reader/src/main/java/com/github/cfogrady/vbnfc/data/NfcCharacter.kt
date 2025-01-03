@@ -1,9 +1,11 @@
 package com.github.cfogrady.vbnfc.data
 
+import java.util.Objects
+
 open class NfcCharacter(
     val dimId: UShort,
     var charIndex: UShort,
-    var phase: Byte,
+    var stage: Byte,
     var attribute: Attribute,
     var ageInDays: Byte,
     var nextAdventureMissionStage: Byte, // next adventure mission stage on the character's dim
@@ -64,4 +66,82 @@ open class NfcCharacter(
         }
         return builder.toString()
     }
+
+
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as NfcCharacter
+
+        if (dimId != other.dimId) return false
+        if (charIndex != other.charIndex) return false
+        if (stage != other.stage) return false
+        if (attribute != other.attribute) return false
+        if (ageInDays != other.ageInDays) return false
+        if (nextAdventureMissionStage != other.nextAdventureMissionStage) return false
+        if (mood != other.mood) return false
+        if (vitalPoints != other.vitalPoints) return false
+        if (transformationCountdown != other.transformationCountdown) return false
+        if (injuryStatus != other.injuryStatus) return false
+        if (trophies != other.trophies) return false
+        if (currentPhaseBattlesWon != other.currentPhaseBattlesWon) return false
+        if (currentPhaseBattlesLost != other.currentPhaseBattlesLost) return false
+        if (totalBattlesWon != other.totalBattlesWon) return false
+        if (totalBattlesLost != other.totalBattlesLost) return false
+        if (activityLevel != other.activityLevel) return false
+        if (heartRateCurrent != other.heartRateCurrent) return false
+        if (!transformationHistory.contentEquals(other.transformationHistory)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(
+            dimId,
+            charIndex,
+            stage,
+            attribute,
+            ageInDays,
+            nextAdventureMissionStage,
+            mood,
+            vitalPoints,
+            transformationCountdown,
+            injuryStatus,
+            trophies,
+            currentPhaseBattlesWon,
+            currentPhaseBattlesLost,
+            totalBattlesWon,
+            totalBattlesLost,
+            activityLevel,
+            heartRateCurrent,
+            transformationHistory.contentHashCode()
+        )
+    }
+
+    override fun toString(): String {
+        return """NfcCharacter(
+    dimId=$dimId,
+    charIndex=$charIndex,
+    stage=$stage,
+    attribute=$attribute,
+    ageInDays=$ageInDays,
+    nextAdventureMissionStage=$nextAdventureMissionStage,
+    mood=$mood,
+    vitalPoints=$vitalPoints,
+    transformationCountdown=$transformationCountdown,
+    injuryStatus=$injuryStatus,
+    trophies=$trophies,
+    currentPhaseBattlesWon=$currentPhaseBattlesWon,
+    currentPhaseBattlesLost=$currentPhaseBattlesLost,
+    totalBattlesWon=$totalBattlesWon,
+    totalBattlesLost=$totalBattlesLost,
+    activityLevel=$activityLevel,
+    heartRateCurrent=$heartRateCurrent,
+    transformationHistory=${transformationHistory.contentToString()}
+)"""
+    }
+
+
 }
