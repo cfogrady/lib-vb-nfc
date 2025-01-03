@@ -99,7 +99,7 @@ class BENfcDataTranslator(
         }
         beCharacter.charIndex.toByteArray(bytes, CHARACTER_INDEX_IDX, ByteOrder.BIG_ENDIAN)
         beCharacter.dimId.toByteArray(bytes, DIM_ID_IDX, ByteOrder.BIG_ENDIAN)
-        bytes[PHASE_IDX] = beCharacter.phase
+        bytes[PHASE_IDX] = beCharacter.stage
         bytes[ATTRIBUTE_IDX] = beCharacter.attribute.ordinal.toByte()
         bytes[AGE_IN_DAYS_IDX] = beCharacter.ageInDays
         beCharacter.getTrainingPp().toByteArray(bytes, TRAINING_PP_IDX, ByteOrder.BIG_ENDIAN)
@@ -129,7 +129,7 @@ class BENfcDataTranslator(
         beCharacter.trainingHp.toByteArray(bytes, TRAINING_HP_IDX, ByteOrder.BIG_ENDIAN)
         beCharacter.trainingAp.toByteArray(bytes, TRAINING_AP_IDX, ByteOrder.BIG_ENDIAN)
         beCharacter.trainingBp.toByteArray(bytes, TRAINING_BP_IDX, ByteOrder.BIG_ENDIAN)
-        beCharacter.remainingTrainingTime.toByteArray(bytes,
+        beCharacter.remainingTrainingTimeInMinutes.toByteArray(bytes,
             TRAINING_TIME_IDX, ByteOrder.BIG_ENDIAN)
         bytes[ABILITY_RARITY_IDX] = beCharacter.abilityRarity.ordinal.toByte()
         beCharacter.abilityType.toByteArray(bytes, ABILITY_TYPE_IDX, ByteOrder.BIG_ENDIAN)
@@ -164,7 +164,7 @@ class BENfcDataTranslator(
             appReserved2 = bytes.copyIntoUShortArray(APP_RESERVED_2_START, APP_RESERVED_2_SIZE),
             charIndex = bytes.getUInt16(CHARACTER_INDEX_IDX, ByteOrder.BIG_ENDIAN),
             dimId = bytes.getUInt16(DIM_ID_IDX, ByteOrder.BIG_ENDIAN),
-            phase = bytes[PHASE_IDX],
+            stage = bytes[PHASE_IDX],
             attribute = NfcCharacter.Attribute.entries[bytes[ATTRIBUTE_IDX].toInt()],
             ageInDays = bytes[AGE_IN_DAYS_IDX],
             trainingPp = bytes.getUInt16(TRAINING_PP_IDX, ByteOrder.BIG_ENDIAN),
@@ -183,12 +183,12 @@ class BENfcDataTranslator(
             itemEffectActivityLevelMinutesRemaining = bytes[ITEM_EFFECT_ACTIVITY_LEVEL_MINUTES_REMAINING_IDX],
             itemEffectVitalPointsChangeValue = bytes[ITEM_EFFECT_VITAL_POINTS_CHANGE_VALUE_IDX],
             itemEffectVitalPointsChangeMinutesRemaining = bytes[ITEM_EFFECT_VITAL_POINTS_CHANGE_MINUTES_REMAINING_IDX],
-            transformationCountdown = bytes.getUInt16(TRANSFORMATION_COUNT_DOWN_IDX, ByteOrder.BIG_ENDIAN),
+            transformationCountdownInMinutes = bytes.getUInt16(TRANSFORMATION_COUNT_DOWN_IDX, ByteOrder.BIG_ENDIAN),
             transformationHistory = buildTransformationHistory(bytes),
             trainingHp = bytes.getUInt16(TRAINING_HP_IDX, ByteOrder.BIG_ENDIAN),
             trainingAp = bytes.getUInt16(TRAINING_AP_IDX, ByteOrder.BIG_ENDIAN),
             trainingBp = bytes.getUInt16(TRAINING_BP_IDX, ByteOrder.BIG_ENDIAN),
-            remainingTrainingTime = bytes.getUInt16(TRAINING_TIME_IDX, ByteOrder.BIG_ENDIAN),
+            remainingTrainingTimeInMinutes = bytes.getUInt16(TRAINING_TIME_IDX, ByteOrder.BIG_ENDIAN),
             abilityRarity = NfcCharacter.AbilityRarity.entries[bytes[ABILITY_RARITY_IDX].toInt()],
             abilityType = bytes.getUInt16(ABILITY_TYPE_IDX, ByteOrder.BIG_ENDIAN),
             abilityBranch = bytes.getUInt16(ABILITY_BRANCH_IDX, ByteOrder.BIG_ENDIAN),

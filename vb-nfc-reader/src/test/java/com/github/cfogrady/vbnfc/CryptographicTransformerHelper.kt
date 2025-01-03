@@ -7,6 +7,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.random.Random
 
+// This class allows for creating new test keys
 class CryptographicTransformerHelper {
 
     companion object {

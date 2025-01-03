@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
                             handleTag {
                                 val character = it.receiveCharacter()
                                 nfcCharacter.value = character
-                                phase=character.phase.toString()
+                                phase=character.stage.toString()
                                 charIndex=character.charIndex.toString()
                                 "Done reading character"
                             }
@@ -106,7 +106,7 @@ class MainActivity : ComponentActivity() {
                         Button(onClick = {
                             handleTag {
                                 nfcCharacter.value?.let {character ->
-                                    character.phase = phase.toByte()
+                                    character.stage = phase.toByte()
                                     character.charIndex = charIndex.toUShort()
                                     it.sendCharacter(character)
                                 }

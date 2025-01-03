@@ -38,18 +38,6 @@ Create a `keys.xml` file inside `lib-vb-nfc/res/values/keys.xml` with the follow
 ```
 The values should be replaced by correct secrets on your local file.
 
-## vb-nfc-reader
-Create `VBBECryptographicTransformer.kt` in `src\test\java\com\github\cfogrady\vbnfc`. This file should have the following variables defined:
-```
-val VBBECryptographicTransformer = CryptographicTransformer(
-    salt1 = "salt1",
-    salt2 = "salt2",
-    decryptionKey = "decryptionKey",
-    substitutionCipher = intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15),
-)
-```
-The values should be replaced by secrets corresponding to the VBBE on your local file.
-
 # Composition
 ## app
 This is a simple app demonstrating how the library can be used.
