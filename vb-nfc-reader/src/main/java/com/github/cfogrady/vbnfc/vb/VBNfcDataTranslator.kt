@@ -3,16 +3,22 @@ package com.github.cfogrady.vbnfc.vb
 import com.github.cfogrady.vbnfc.CryptographicTransformer
 import com.github.cfogrady.vbnfc.NfcDataTranslator
 import com.github.cfogrady.vbnfc.TagCommunicator
-import com.github.cfogrady.vbnfc.data.DeviceSubType
+import com.github.cfogrady.vbnfc.be.BENfcDataTranslator.Companion.DIM_IDX
 import com.github.cfogrady.vbnfc.data.DeviceType
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import com.github.cfogrady.vbnfc.data.NfcHeader
 import com.github.cfogrady.vbnfc.getUInt16
+import java.nio.ByteOrder
 
-class VBNfcDataTranslator(override val cryptographicTransformer: CryptographicTransformer) : NfcDataTranslator {
+class VBNfcDataTranslator(cryptographicTransformer: CryptographicTransformer) : NfcDataTranslator<NfcCharacter>(
+    cryptographicTransformer,
+    arrayOf()
+) {
 
     companion object {
         const val OPERATION_PAGE: Byte = 0x6
+
+        const val OTP_START_IDX = 352
     }
 
     override fun finalizeByteArrayFormat(bytes: ByteArray) {
@@ -24,8 +30,10 @@ class VBNfcDataTranslator(override val cryptographicTransformer: CryptographicTr
         return byteArrayOf(TagCommunicator.NFC_WRITE_COMMAND, OPERATION_PAGE, header.status, header.dimIdBytes[1], operation, vbHeader.reserved)
     }
 
-    override fun parseNfcCharacter(bytes: ByteArray): NfcCharacter {
-        TODO("Not yet implemented")
+    override fun createBaseCharacter(dataBytes: ByteArray): NfcCharacter {
+        return NfcCharacter(
+            dimId = dataBytes.getUInt16(DIM_IDX, ByteOrder.BIG_ENDIAN),
+        )
     }
 
     override fun parseHeader(headerBytes: ByteArray): NfcHeader {

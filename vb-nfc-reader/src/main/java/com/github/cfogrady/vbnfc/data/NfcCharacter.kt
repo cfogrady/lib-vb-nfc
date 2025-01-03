@@ -11,7 +11,13 @@ open class NfcCharacter(
     var nextAdventureMissionStage: Byte = 1, // next adventure mission stage on the character's dim
     var mood: Byte = 50,
     var vitalPoints: UShort = 0u,
-    var transformationCountdown: UShort = 0u,
+    var itemEffectMentalStateValue: Byte = 0,
+    var itemEffectMentalStateMinutesRemaining: Byte = 0,
+    var itemEffectActivityLevelValue: Byte = 0,
+    var itemEffectActivityLevelMinutesRemaining: Byte = 0,
+    var itemEffectVitalPointsChangeValue: Byte = 0,
+    var itemEffectVitalPointsChangeMinutesRemaining: Byte = 0,
+    var transformationCountdownInMinutes: UShort = 0u,
     var injuryStatus: InjuryStatus = InjuryStatus.None,
     var trophies: UShort = 0u,
     var currentPhaseBattlesWon: UShort = 0u,
@@ -20,7 +26,9 @@ open class NfcCharacter(
     var totalBattlesLost: UShort = 0u,
     var activityLevel: Byte = 0,
     var heartRateCurrent: UByte = 0u,
-    var transformationHistory: Array<Transformation> = Array(8) {Transformation(-1, -1, -1, -1)}
+    var transformationHistory: Array<Transformation> = Array(8) {Transformation(-1, -1, -1, -1)},
+    var appReserved1: ByteArray = ByteArray(12), // this is a 12 byte array reserved for new app features, a custom app should be able to safely use this for custom features
+    var appReserved2: Array<UShort> = Array(3) {0u}, // this is a 3 element array reserved for new app features, a custom app should be able to safely use this for custom features
 ) {
 
     data class Transformation(
@@ -56,18 +64,13 @@ open class NfcCharacter(
         InjuryFour,
     }
 
-    fun getTransformationHistoryString(separator: String = System.lineSeparator()): String {
-        val builder = StringBuilder()
-        for(i in transformationHistory.indices) {
-            builder.append(transformationHistory[i])
-            if(i != transformationHistory.size-1) {
-                builder.append(separator)
-            }
+    fun getWinPercentage(): Byte {
+        val totalBatles = currentPhaseBattlesWon + currentPhaseBattlesLost
+        if (totalBatles == 0u) {
+            return 0
         }
-        return builder.toString()
+        return ((100u * currentPhaseBattlesWon) / totalBatles).toByte()
     }
-
-
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -83,7 +86,13 @@ open class NfcCharacter(
         if (nextAdventureMissionStage != other.nextAdventureMissionStage) return false
         if (mood != other.mood) return false
         if (vitalPoints != other.vitalPoints) return false
-        if (transformationCountdown != other.transformationCountdown) return false
+        if (itemEffectMentalStateValue != other.itemEffectMentalStateValue) return false
+        if (itemEffectMentalStateMinutesRemaining != other.itemEffectMentalStateMinutesRemaining) return false
+        if (itemEffectActivityLevelValue != other.itemEffectActivityLevelValue) return false
+        if (itemEffectActivityLevelMinutesRemaining != other.itemEffectActivityLevelMinutesRemaining) return false
+        if (itemEffectVitalPointsChangeValue != other.itemEffectVitalPointsChangeValue) return false
+        if (itemEffectVitalPointsChangeMinutesRemaining != other.itemEffectVitalPointsChangeMinutesRemaining) return false
+        if (transformationCountdownInMinutes != other.transformationCountdownInMinutes) return false
         if (injuryStatus != other.injuryStatus) return false
         if (trophies != other.trophies) return false
         if (currentPhaseBattlesWon != other.currentPhaseBattlesWon) return false
@@ -93,6 +102,8 @@ open class NfcCharacter(
         if (activityLevel != other.activityLevel) return false
         if (heartRateCurrent != other.heartRateCurrent) return false
         if (!transformationHistory.contentEquals(other.transformationHistory)) return false
+        if (!appReserved1.contentEquals(other.appReserved1)) return false
+        if (!appReserved2.contentEquals(other.appReserved2)) return false
 
         return true
     }
@@ -107,7 +118,13 @@ open class NfcCharacter(
             nextAdventureMissionStage,
             mood,
             vitalPoints,
-            transformationCountdown,
+            itemEffectMentalStateValue,
+            itemEffectMentalStateMinutesRemaining,
+            itemEffectActivityLevelValue,
+            itemEffectActivityLevelMinutesRemaining,
+            itemEffectVitalPointsChangeValue,
+            itemEffectVitalPointsChangeMinutesRemaining,
+            transformationCountdownInMinutes,
             injuryStatus,
             trophies,
             currentPhaseBattlesWon,
@@ -116,7 +133,9 @@ open class NfcCharacter(
             totalBattlesLost,
             activityLevel,
             heartRateCurrent,
-            transformationHistory.contentHashCode()
+            transformationHistory.contentHashCode(),
+            appReserved1.contentHashCode(),
+            appReserved2.contentHashCode()
         )
     }
 
@@ -130,7 +149,13 @@ open class NfcCharacter(
     nextAdventureMissionStage=$nextAdventureMissionStage,
     mood=$mood,
     vitalPoints=$vitalPoints,
-    transformationCountdown=$transformationCountdown,
+    itemEffectMentalStateValue=$itemEffectMentalStateValue,
+    itemEffectMentalStateMinutesRemaining=$itemEffectMentalStateMinutesRemaining,
+    itemEffectActivityLevelValue=$itemEffectActivityLevelValue,
+    itemEffectActivityLevelMinutesRemaining=$itemEffectActivityLevelMinutesRemaining,
+    itemEffectVitalPointsChangeValue=$itemEffectVitalPointsChangeValue,
+    itemEffectVitalPointsChangeMinutesRemaining=$itemEffectVitalPointsChangeMinutesRemaining,
+    transformationCountdown=$transformationCountdownInMinutes,
     injuryStatus=$injuryStatus,
     trophies=$trophies,
     currentPhaseBattlesWon=$currentPhaseBattlesWon,
@@ -139,7 +164,9 @@ open class NfcCharacter(
     totalBattlesLost=$totalBattlesLost,
     activityLevel=$activityLevel,
     heartRateCurrent=$heartRateCurrent,
-    transformationHistory=${transformationHistory.contentToString()}
+    transformationHistory=${transformationHistory.contentToString()},
+    appReserved1=${appReserved1.contentToString()},
+    appReserved2=${appReserved2.contentToString()}
 )"""
     }
 
