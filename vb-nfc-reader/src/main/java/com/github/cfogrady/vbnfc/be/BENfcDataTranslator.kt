@@ -244,7 +244,7 @@ class BENfcDataTranslator(
                 rootIdx += 4 // we skip 236-239 for some reason
             }
             bytes[rootIdx] = transformationHistory[phase].toCharIndex
-            bytes[rootIdx+1] = transformationHistory[phase].year
+            bytes[rootIdx+1] = transformationHistory[phase].yearsSince1988
             bytes[rootIdx+2] = transformationHistory[phase].month
             bytes[rootIdx+3] = transformationHistory[phase].day
         }
@@ -261,7 +261,7 @@ class BENfcDataTranslator(
             }
             NfcCharacter.Transformation(
                 toCharIndex = data[rootIdx],
-                year = data[rootIdx+1],
+                yearsSince1988 = data[rootIdx+1],
                 month = data[rootIdx+2],
                 day = data[rootIdx+3]
             )
