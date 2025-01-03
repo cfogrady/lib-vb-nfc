@@ -23,7 +23,7 @@ open class NfcCharacter(
 
     data class Transformation(
         val toCharIndex: Byte,
-        val year: Byte,
+        val yearsSince1988: Byte,
         val month: Byte,
         val day: Byte)
 
