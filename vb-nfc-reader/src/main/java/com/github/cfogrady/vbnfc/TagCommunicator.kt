@@ -115,7 +115,6 @@ class TagCommunicator(
         val currentNfcData = readNfcData()
         val newNfcData = translator.cryptographicTransformer.decryptData(currentNfcData, nfcData.tag.id)
         translator.setCharacterInByteArray(character, newNfcData)
-        checksumCalculator.recalculateChecksums(newNfcData)
         translator.finalizeByteArrayFormat(newNfcData)
         return newNfcData
     }
