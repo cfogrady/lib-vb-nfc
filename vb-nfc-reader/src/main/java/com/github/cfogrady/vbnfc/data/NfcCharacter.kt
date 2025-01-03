@@ -23,7 +23,7 @@ open class NfcCharacter(
 
     data class Transformation(
         val toCharIndex: Byte,
-        val year: Byte,
+        val yearsSince1988: Byte,
         val month: Byte,
         val day: Byte)
 
@@ -52,5 +52,16 @@ open class NfcCharacter(
         InjuryThree,
         InjuryThreeHealed,
         InjuryFour,
+    }
+
+    fun getTransformationHistoryString(separator: String = System.lineSeparator()): String {
+        val builder = StringBuilder()
+        for(i in transformationHistory.indices) {
+            builder.append(transformationHistory[i])
+            if(i != transformationHistory.size-1) {
+                builder.append(separator)
+            }
+        }
+        return builder.toString()
     }
 }

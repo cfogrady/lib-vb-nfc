@@ -103,7 +103,8 @@ class BENfcCharacter(
     totalBattlesLost: $totalBattlesLost,
     activityLevel: $activityLevel,
     heartRateCurrent: $heartRateCurrent,
-    transformationHistory: $transformationHistory,
+    transformationHistory:
+      ${getTransformationHistoryString(separator = "\n      ")},
     trainingHp: $trainingHp,
     trainingAp: $trainingAp,
     trainingBp: $trainingBp,
