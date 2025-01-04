@@ -18,6 +18,9 @@ class BEAppBlockTranslator: BlockTranslator<BENfcCharacter> {
         const val ITEM_REMAINING_TIME_IDX = 13
     }
 
+    override val startBlock: Int = 18
+    override val endBlock: Int = 18
+
     override fun parseBlockIntoCharacter(block: ByteArray, character: BENfcCharacter) {
         character.abilityRarity = NfcCharacter.AbilityRarity.entries[block[ABILITY_RARITY_IDX].toInt()]
         character.abilityType = block.getUInt16(ABILITY_TYPE_IDX, ByteOrder.BIG_ENDIAN)

@@ -5,7 +5,7 @@ import com.github.cfogrady.vbnfc.getUInt16
 import com.github.cfogrady.vbnfc.toByteArray
 import java.nio.ByteOrder
 
-class Block8Translator<T : NfcCharacter> : BlockTranslator<T> {
+class CharacterStatusBlockTranslator<T : NfcCharacter> : BlockTranslator<T> {
     companion object {
         const val NEXT_ADVENTURE_MISSION_STAGE_IDX = 0
         const val MOOD_IDX = 1
@@ -21,6 +21,9 @@ class Block8Translator<T : NfcCharacter> : BlockTranslator<T> {
         // 12 reserved
         const val TRANSFORMATION_COUNT_DOWN_IDX = 13
     }
+
+    override val startBlock: Int = 8
+    override val endBlock: Int = 8
 
     override fun parseBlockIntoCharacter(block: ByteArray, character: T) {
         character.nextAdventureMissionStage = block[NEXT_ADVENTURE_MISSION_STAGE_IDX]

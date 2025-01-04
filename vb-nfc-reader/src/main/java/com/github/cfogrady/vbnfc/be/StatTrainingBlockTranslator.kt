@@ -13,6 +13,9 @@ class StatTrainingBlockTranslator: BlockTranslator<BENfcCharacter> {
         const val TRAINING_TIME_IDX = 10
     }
 
+    override val startBlock: Int = 16
+    override val endBlock: Int = 16
+
     override fun parseBlockIntoCharacter(block: ByteArray, character: BENfcCharacter) {
         character.trainingHp = block.getUInt16(TRAINING_HP_IDX, ByteOrder.BIG_ENDIAN)
         character.trainingAp = block.getUInt16(TRAINING_AP_IDX, ByteOrder.BIG_ENDIAN)

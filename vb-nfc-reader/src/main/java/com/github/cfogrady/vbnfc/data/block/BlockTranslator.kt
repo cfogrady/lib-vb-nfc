@@ -7,4 +7,7 @@ import com.github.cfogrady.vbnfc.data.NfcCharacter
 interface BlockTranslator<T: NfcCharacter> {
     fun parseBlockIntoCharacter(block: ByteArray, character: T)
     fun writeCharacterIntoBlocks(character: T, block: ByteArray): ByteArray
+
+    val startBlock: Int
+    val endBlock: Int
 }

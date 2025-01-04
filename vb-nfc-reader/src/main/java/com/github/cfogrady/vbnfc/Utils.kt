@@ -1,5 +1,7 @@
 package com.github.cfogrady.vbnfc
 
+import kotlin.math.min
+
 // ConverToPages converts the byte array into the paged structure used in NFC communication
 // If data for the header isn't included, the first 8 pages will be 0 filled.
 fun ConvertToPages(data: ByteArray, header: ByteArray? = null) : List<ByteArray> {
@@ -17,4 +19,15 @@ fun ConvertToPages(data: ByteArray, header: ByteArray? = null) : List<ByteArray>
         pages.add(data.sliceArray(i..<i+4))
     }
     return pages
+}
+
+fun FormatPagedBytes(data: ByteArray): String {
+    val builder = StringBuilder()
+    for(i in data.indices step 4) {
+        for (j in i..<min(i+4, data.size)) {
+            builder.append(String.format("%03d", data[j])).append(" ")
+        }
+        builder.append(System.lineSeparator())
+    }
+    return builder.toString()
 }

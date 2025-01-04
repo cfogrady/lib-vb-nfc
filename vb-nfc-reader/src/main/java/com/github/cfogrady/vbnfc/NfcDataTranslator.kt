@@ -3,6 +3,7 @@ package com.github.cfogrady.vbnfc
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import com.github.cfogrady.vbnfc.data.NfcHeader
 import com.github.cfogrady.vbnfc.data.block.BlockTranslator
+import com.github.cfogrady.vbnfc.data.block.CharacterTypeBlockTranslator
 
 abstract class NfcDataTranslator<OUT_CHARACTER_TYPE : NfcCharacter>(
     val cryptographicTransformer: CryptographicTransformer,
@@ -16,9 +17,10 @@ abstract class NfcDataTranslator<OUT_CHARACTER_TYPE : NfcCharacter>(
     open fun setCharacterInByteArray(character: NfcCharacter, bytes: ByteArray) {
         // There is a problem with the factory or setup if this cast fails
         val actualCharacter = character as OUT_CHARACTER_TYPE
-        for(i in blockTranslators.indices) {
-            val newBlock = blockTranslators[i].writeCharacterIntoBlocks(actualCharacter, getDataBlock(i, bytes))
-            writeBlock(i, newBlock, bytes)
+        for(blockTranslator in blockTranslators) {
+            val blockData = getDataBlocks(blockTranslator.startBlock, blockTranslator.endBlock, bytes)
+            val newBlocks = blockTranslator.writeCharacterIntoBlocks(actualCharacter, blockData)
+            writeBlocks(blockTranslator.startBlock, newBlocks, bytes)
         }
         nonBlockAlignedWrites(character, bytes)
     }
@@ -26,8 +28,9 @@ abstract class NfcDataTranslator<OUT_CHARACTER_TYPE : NfcCharacter>(
     // parseNfcCharacter parses the nfc data byte array into an instance of a NfcCharacter object
     open fun parseNfcCharacter(bytes: ByteArray): OUT_CHARACTER_TYPE {
         val character = createBaseCharacter(bytes)
-        for(i in blockTranslators.indices) {
-            blockTranslators[i].parseBlockIntoCharacter(getDataBlock(i, bytes), character)
+        for(blockTranslator in blockTranslators) {
+            val blockData = getDataBlocks(blockTranslator.startBlock, blockTranslator.endBlock, bytes)
+            blockTranslator.parseBlockIntoCharacter(blockData, character)
         }
         return character
     }
@@ -53,7 +56,13 @@ abstract class NfcDataTranslator<OUT_CHARACTER_TYPE : NfcCharacter>(
         return bytes.sliceArray(blockStartIdx..<blockEndIdx)
     }
 
-    private fun writeBlock(blockIdx: Int, blockBytes: ByteArray, rawData: ByteArray) {
+    private fun getDataBlocks(startBlock: Int, endBlock: Int, bytes: ByteArray) : ByteArray {
+        val blockStartIdx = (startBlock)*16
+        val blockEndIdx = (endBlock+1)*16
+        return bytes.sliceArray(blockStartIdx..<blockEndIdx)
+    }
+
+    private fun writeBlocks(blockIdx: Int, blockBytes: ByteArray, rawData: ByteArray) {
         blockBytes.copyInto(rawData, blockIdx*16, 0)
     }
 

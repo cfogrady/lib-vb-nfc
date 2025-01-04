@@ -14,6 +14,9 @@ open class TransformationRequirementsBlockTranslator<T: NfcCharacter> : BlockTra
         const val WIN_PCT_IDX = 10 // unused
     }
 
+    override val startBlock: Int = 6
+    override val endBlock: Int = 6
+
     override fun parseBlockIntoCharacter(block: ByteArray, character: T) {
         character.currentPhaseBattlesWon = block.getUInt16(CURRENT_BATTLES_WON_IDX, ByteOrder.BIG_ENDIAN)
         character.currentPhaseBattlesLost = block.getUInt16(CURRENT_BATTLES_LOST_IDX, ByteOrder.BIG_ENDIAN)

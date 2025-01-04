@@ -155,7 +155,7 @@ open class NfcCharacter(
     itemEffectActivityLevelMinutesRemaining=$itemEffectActivityLevelMinutesRemaining,
     itemEffectVitalPointsChangeValue=$itemEffectVitalPointsChangeValue,
     itemEffectVitalPointsChangeMinutesRemaining=$itemEffectVitalPointsChangeMinutesRemaining,
-    transformationCountdown=$transformationCountdownInMinutes,
+    transformationCountdownInMinutes=$transformationCountdownInMinutes,
     injuryStatus=$injuryStatus,
     trophies=$trophies,
     currentPhaseBattlesWon=$currentPhaseBattlesWon,

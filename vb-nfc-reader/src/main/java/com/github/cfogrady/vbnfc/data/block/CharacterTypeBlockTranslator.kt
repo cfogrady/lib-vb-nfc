@@ -6,7 +6,7 @@ import com.github.cfogrady.vbnfc.getUInt16
 import com.github.cfogrady.vbnfc.toByteArray
 import java.nio.ByteOrder
 
-class Block4Translator<T : NfcCharacter> : BlockTranslator<T> {
+class CharacterTypeBlockTranslator<T : NfcCharacter> : BlockTranslator<T> {
     companion object {
         const val INJURY_STATUS_IDX = 0
         const val APP_RESERVED_2_START = 2
@@ -17,6 +17,9 @@ class Block4Translator<T : NfcCharacter> : BlockTranslator<T> {
         const val ATTRIBUTE_IDX = 13
         const val AGE_IN_DAYS_IDX = 14 // always 0 on BE :(
     }
+
+    override val startBlock: Int = 4
+    override val endBlock: Int = 4
 
     override fun parseBlockIntoCharacter(block: ByteArray, character: T) {
         character.injuryStatus = NfcCharacter.InjuryStatus.entries[block.getUInt16(INJURY_STATUS_IDX, ByteOrder.BIG_ENDIAN).toInt()]

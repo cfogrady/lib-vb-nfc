@@ -6,6 +6,7 @@ import com.github.cfogrady.vbnfc.be.BENfcDataTranslator
 import com.github.cfogrady.vbnfc.data.DeviceType
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import com.github.cfogrady.vbnfc.data.NfcHeader
+import com.github.cfogrady.vbnfc.vb.VBNfcDataTranslator
 import java.nio.ByteOrder
 
 class TagCommunicator(
@@ -40,6 +41,9 @@ class TagCommunicator(
                     DeviceType.VitalBraceletBEDeviceType -> {
                         deviceToTranslator[keyValue.key] = BENfcDataTranslator(keyValue.value, checksumCalculator)
                     }
+                    DeviceType.VitalSeriesDeviceType -> {
+                        deviceToTranslator[keyValue.key] = VBNfcDataTranslator(keyValue.value)
+                    }
                     else -> {
                         throw IllegalArgumentException("DeviceId ${keyValue.key} Provided Without Known Parser")
                     }
@@ -64,13 +68,13 @@ class TagCommunicator(
         passwordAuth(translator.cryptographicTransformer)
         Log.i(TAG, "Reading Character")
         val encryptedCharacterData = readNfcData()
-        Log.i(TAG, "Raw NFC Data Received: ${encryptedCharacterData.toHexString()}")
         val decryptedCharacterData = translator.cryptographicTransformer.decryptData(encryptedCharacterData, nfcData.tag.id)
         checksumCalculator.checkChecksums(decryptedCharacterData)
+        Log.i(TAG, "Decrypted NFC Data Received: ${decryptedCharacterData.toHexString()}")
         val nfcCharacter = translator.parseNfcCharacter(decryptedCharacterData)
         Log.i(TAG, "Known Character Stats: $nfcCharacter")
         Log.i(TAG, "Signaling operation complete")
-        nfcData.transceive(translator.getOperationCommandBytes(header, OPERATION_TRANSFERRED_TO_APP))
+        // nfcData.transceive(translator.getOperationCommandBytes(header, OPERATION_TRANSFERRED_TO_APP))
         return nfcCharacter
     }
 
