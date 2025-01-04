@@ -5,7 +5,7 @@ import com.github.cfogrady.vbnfc.getUInt16
 import com.github.cfogrady.vbnfc.toByteArray
 import java.nio.ByteOrder
 
-open class Block6Translator<T: NfcCharacter> : BlockTranslator<T> {
+open class TransformationRequirementsBlockTranslator<T: NfcCharacter> : BlockTranslator<T> {
     companion object {
         const val CURRENT_BATTLES_WON_IDX = 2
         const val CURRENT_BATTLES_LOST_IDX = 4

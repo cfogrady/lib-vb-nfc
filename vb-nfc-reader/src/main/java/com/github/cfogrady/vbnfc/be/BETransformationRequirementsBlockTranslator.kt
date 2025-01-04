@@ -1,11 +1,11 @@
 package com.github.cfogrady.vbnfc.be
 
-import com.github.cfogrady.vbnfc.data.block.Block6Translator
+import com.github.cfogrady.vbnfc.data.block.TransformationRequirementsBlockTranslator
 import com.github.cfogrady.vbnfc.getUInt16
 import com.github.cfogrady.vbnfc.toByteArray
 import java.nio.ByteOrder
 
-class BEBlock6Translator : Block6Translator<BENfcCharacter>() {
+class BETransformationRequirementsBlockTranslator : TransformationRequirementsBlockTranslator<BENfcCharacter>() {
     companion object {
         const val TRAINING_PP_IDX = 0
         const val CHARACTER_CREATION_FIRMWARE_VERSION_IDX = 12

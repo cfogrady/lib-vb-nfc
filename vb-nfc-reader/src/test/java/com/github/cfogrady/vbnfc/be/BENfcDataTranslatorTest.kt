@@ -1,6 +1,5 @@
 package com.github.cfogrady.vbnfc.be
 
-import com.github.cfogrady.vbnfc.ChecksumCalculator
 import com.github.cfogrady.vbnfc.CryptographicTransformer
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import io.mockk.mockkClass

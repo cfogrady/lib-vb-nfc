@@ -5,10 +5,8 @@ import com.github.cfogrady.vbnfc.ChecksumCalculator
 import com.github.cfogrady.vbnfc.CryptographicTransformer
 import com.github.cfogrady.vbnfc.NfcDataTranslator
 import com.github.cfogrady.vbnfc.TagCommunicator
-import com.github.cfogrady.vbnfc.copyIntoUShortArray
 import com.github.cfogrady.vbnfc.data.DeviceSubType
 import com.github.cfogrady.vbnfc.data.DeviceType
-import com.github.cfogrady.vbnfc.data.NfcCharacter
 import com.github.cfogrady.vbnfc.data.NfcHeader
 import com.github.cfogrady.vbnfc.data.block.Block0Translator
 import com.github.cfogrady.vbnfc.data.block.Block4Translator
@@ -16,7 +14,6 @@ import com.github.cfogrady.vbnfc.data.block.Block8Translator
 import com.github.cfogrady.vbnfc.data.block.NoopBlockTranslator
 import com.github.cfogrady.vbnfc.data.block.TransformationBlockTranslator
 import com.github.cfogrady.vbnfc.getUInt16
-import com.github.cfogrady.vbnfc.toByteArray
 import java.nio.ByteOrder
 
 class BENfcDataTranslator(
@@ -31,7 +28,7 @@ class BENfcDataTranslator(
         NoopBlockTranslator(), // 3
         Block4Translator(), // 4
         NoopBlockTranslator(), // 5
-        BEBlock6Translator(), // 6
+        BETransformationRequirementsBlockTranslator(), // 6
         NoopBlockTranslator(), // 7
         Block8Translator(), // 8
         NoopBlockTranslator(), // 9
