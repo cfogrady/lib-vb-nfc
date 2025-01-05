@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    id("maven-publish")
 }
 
 android {
@@ -29,6 +30,18 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("ReleaseAar") {
+            groupId = "com.github.cfogrady"
+            artifactId = "vb-nfc-reader"
+            version = "0.1.0"
+
+            afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
+        }
     }
 }
 
