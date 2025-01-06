@@ -25,7 +25,7 @@ fun FormatPagedBytes(data: ByteArray): String {
     val builder = StringBuilder()
     for(i in data.indices step 4) {
         for (j in i..<min(i+4, data.size)) {
-            builder.append(String.format("%03d", data[j])).append(" ")
+            builder.append(String.format("%03d", data[j].toUByte().toShort())).append(" ")
         }
         builder.append(System.lineSeparator())
     }

@@ -16,11 +16,12 @@ class VBTransformationHistoryBlockTranslator : BlockTranslator<VBNfcCharacter> {
         val year = ByteArray(9)
         val day = ByteArray(9)
         for(i in 0..5) {
-            charIndices[i] = block[i]
+            charIndices[i] = block[(i*2)+1]
         }
-        month[0] = block[6]
-        day[0] = block[7]
-        year[0] = block[9]
+        year[0] = block[12]
+        month[0] = block[13]
+        day[0] = block[14]
+
         for(i in 6..8) {
             charIndices[i] = block[i+26]
         }
