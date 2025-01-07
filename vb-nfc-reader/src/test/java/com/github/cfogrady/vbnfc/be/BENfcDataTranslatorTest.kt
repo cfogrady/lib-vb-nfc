@@ -1,14 +1,32 @@
 package com.github.cfogrady.vbnfc.be
 
+import android.util.Log
 import com.github.cfogrady.vbnfc.CryptographicTransformer
-import com.github.cfogrady.vbnfc.FormatPagedBytes
 import com.github.cfogrady.vbnfc.TranslatorTestUtils
 import com.github.cfogrady.vbnfc.data.NfcCharacter
+import io.mockk.every
 import io.mockk.mockkClass
+import io.mockk.mockkStatic
 import org.junit.Assert
+import org.junit.BeforeClass
 import org.junit.Test
 
 class BENfcDataTranslatorTest {
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun mockLogging(): Unit {
+            mockkStatic(Log::class)
+            every { Log.i(any<String>(), any<String>()) } answers {
+                val tag = it.invocation.args[0] as String
+                val message = it.invocation.args[1] as String
+                println("$tag: $message")
+                1
+            }
+        }
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     @Test
     fun testNfcCharacterParsing() {
@@ -46,6 +64,13 @@ class BENfcDataTranslatorTest {
                 NfcCharacter.Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE),
                 NfcCharacter.Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE),
                 ),
+            vitalHistory = arrayOf(NfcCharacter.DailyVitals(1140u, 0u, 0u, 15u),
+                NfcCharacter.DailyVitals(2u, 2024u, 1u, 6u),
+                NfcCharacter.DailyVitals(0u, 2024u, 1u, 5u),
+                NfcCharacter.DailyVitals(0u, 2024u, 1u, 4u),
+                NfcCharacter.DailyVitals(0u, 2024u, 1u, 3u),
+                NfcCharacter.DailyVitals(0u, 2024u, 1u, 2u),
+                NfcCharacter.DailyVitals(0u, 2024u, 1u, 1u)),
             trainingHp = 5u,
             trainingAp = 15u,
             trainingBp = 10u,
@@ -103,6 +128,14 @@ class BENfcDataTranslatorTest {
                 NfcCharacter.Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE),
                 NfcCharacter.Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE),
             ),
+            vitalHistory = arrayOf(
+                NfcCharacter.DailyVitals(0u, 0u, 0u, 0u),
+                NfcCharacter.DailyVitals(0u, 0u, 0u, 0u),
+                NfcCharacter.DailyVitals(0u, 0u, 0u, 0u),
+                NfcCharacter.DailyVitals(0u, 0u, 0u, 0u),
+                NfcCharacter.DailyVitals(0u, 0u, 0u, 0u),
+                NfcCharacter.DailyVitals(0u, 0u, 0u, 0u),
+                NfcCharacter.DailyVitals(0u, 0u, 0u, 0u),),
             trainingHp = 5u,
             trainingAp = 15u,
             trainingBp = 10u,

@@ -11,6 +11,7 @@ import com.github.cfogrady.vbnfc.data.NfcHeader
 import com.github.cfogrady.vbnfc.data.block.AppBlockTranslator
 import com.github.cfogrady.vbnfc.data.block.CharacterTypeBlockTranslator
 import com.github.cfogrady.vbnfc.data.block.CharacterStatusBlockTranslator
+import com.github.cfogrady.vbnfc.data.block.VitalsHistoryBlockTranslator
 import com.github.cfogrady.vbnfc.getUInt16
 import java.nio.ByteOrder
 
@@ -24,12 +25,12 @@ class BENfcDataTranslator(
         CharacterTypeBlockTranslator(), // 4
         BETransformationRequirementsBlockTranslator(), // 6
         CharacterStatusBlockTranslator(), // 8
+        VitalsHistoryBlockTranslator(), // 10
         BETransformationHistoryBlockTranslator(0, 3), // 13
         BETransformationHistoryBlockTranslator(1, 3), // 14
         BETransformationHistoryBlockTranslator(2, 2), // 15
         StatTrainingBlockTranslator(), // 16
         BEAppBlockTranslator(), // 18
-
     )
 ) {
 
@@ -73,8 +74,8 @@ class BENfcDataTranslator(
     override fun parseHeader(headerBytes: ByteArray): NfcHeader {
         Log.i(TagCommunicator.TAG, "Bytes in header: ${headerBytes.size}")
         val header = NfcHeader(
-            deviceId = DeviceType.VitalBraceletBEDeviceType,
-            deviceSubType = DeviceSubType.Original,
+            deviceTypeId = DeviceType.VitalBraceletBEDeviceType,
+            deviceSubTypeId = DeviceSubType.Original,
             vbCompatibleTagIdentifier = headerBytes.sliceArray(0..3), // this is a magic number used to verify that the tag is a VB.
             status = headerBytes[8],
             operation = headerBytes[9],

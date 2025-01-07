@@ -1,13 +1,12 @@
 package com.github.cfogrady.vbnfc.data
 
-import com.github.cfogrady.vbnfc.NfcDataTranslator
 import com.github.cfogrady.vbnfc.getUInt16
 import com.github.cfogrady.vbnfc.toByteArray
 import java.nio.ByteOrder
 
 open class NfcHeader (
-    val deviceId: UShort,
-    val deviceSubType: UShort,
+    val deviceTypeId: UShort,
+    val deviceSubTypeId: UShort,
     val vbCompatibleTagIdentifier: ByteArray, // this is a magic number used to verify that the tag is a VB.
     val status: Byte,
     val operation: Byte,

@@ -6,6 +6,8 @@ import com.github.cfogrady.vbnfc.be.BENfcDataTranslator
 import com.github.cfogrady.vbnfc.data.DeviceType
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import com.github.cfogrady.vbnfc.data.NfcHeader
+import com.github.cfogrady.vbnfc.vb.SpecialMission
+import com.github.cfogrady.vbnfc.vb.VBNfcCharacter
 import com.github.cfogrady.vbnfc.vb.VBNfcDataTranslator
 import java.nio.ByteOrder
 
@@ -24,6 +26,7 @@ class TagCommunicator(
 
         const val STATUS_IDLE: Byte = 0
         const val STATUS_READY: Byte = 1
+        const val STATUS_DIM_READY: Byte = 3
 
         const val OPERATION_IDLE: Byte = 0
         const val OPERATION_READY: Byte = 1
@@ -32,6 +35,8 @@ class TagCommunicator(
         const val OPERATION_TRANSFERED_TO_DEVICE: Byte = 4
         const val START_DATA_PAGE = 8
         const val LAST_DATA_PAGE = 220 // technically 223, but we read 4 pages at a time.
+
+        const val ZERO_DIM_ID: UShort = 0u
 
         fun getInstance(nfcData: NfcA, deviceTypeIdSecrets: Map<UShort, CryptographicTransformer>): TagCommunicator {
             val checksumCalculator = ChecksumCalculator()
@@ -115,14 +120,6 @@ class TagCommunicator(
         nfcData.transceive(translator.getOperationCommandBytes(header, OPERATION_CHECK_DIM))
     }
 
-    private fun defaultNfcDataGenerator(translator: NfcDataTranslator<*>, character: NfcCharacter): ByteArray {
-        val currentNfcData = readNfcData()
-        val newNfcData = translator.cryptographicTransformer.decryptData(currentNfcData, nfcData.tag.id)
-        translator.setCharacterInByteArray(character, newNfcData)
-        translator.finalizeByteArrayFormat(newNfcData)
-        return newNfcData
-    }
-
     // sendCharacter sends a character to the device using the nfcDataGenerator function. The
     // default nfcDataGenerator reads the current data of the device and applies the new character
     // data to the read data and prepares that to be sent back to the device. The nfcDataGenerator
@@ -130,28 +127,41 @@ class TagCommunicator(
     // provided to the sendCharacter method and returns the decrypted byte array data to be sent
     // back to the device.
     @OptIn(ExperimentalStdlibApi::class)
-    fun sendCharacter(character: NfcCharacter, nfcDataGenerator: (NfcDataTranslator<*>, NfcCharacter) -> ByteArray = this::defaultNfcDataGenerator) {
+    fun sendCharacter(character: NfcCharacter) {
+        if(character is VBNfcCharacter) {
+            character.specialMissions[0] = SpecialMission.standardMiles()
+            character.specialMissions[1] = SpecialMission.standardVitals()
+            character.specialMissions[2] = SpecialMission.standardBattles()
+            character.specialMissions[3] = SpecialMission.standardWins()
+        }
         Log.i(TAG, "Sending Character: $character")
         val deviceTranslatorAndHeader = fetchDeviceTranslatorAndHeader()
         val translator = deviceTranslatorAndHeader.translator
         val header = deviceTranslatorAndHeader.nfcHeader
-
-        // check the nonce
-        // if it's not expected, then the bracelet isn't ready
-
-        // Check the product and device ids that they match the target.
-        // This check relies on the app categories of BE, Vital Hero, and Vital Series.
-
+        if(header.status != STATUS_DIM_READY || header.operation != OPERATION_READY) {
+            throw IllegalStateException("Device is not ready")
+        }
         // ensure the dim id matches the expected
         if (character.dimId != header.getDimId()) {
             throw IllegalArgumentException("Device is ready for DIM ${header.getDimId()}, but attempted to send ${character.dimId}")
+        }
+
+        // Check the product and device ids that they match the target.
+        if (character.getMatchingDeviceTypeId() != header.deviceTypeId) {
+            throw IllegalArgumentException("Character doesn't match device type")
         }
 
         // update the memory data
         nfcData.transceive(translator.getOperationCommandBytes(header, OPERATION_READY))
         passwordAuth(translator.cryptographicTransformer)
 
-        var newNfcData = nfcDataGenerator(translator, character)
+        val currentNfcData = readNfcData()
+        var newNfcData = translator.cryptographicTransformer.decryptData(currentNfcData, nfcData.tag.id)
+        if(header.deviceTypeId == DeviceType.VitalBraceletBEDeviceType && ZERO_DIM_ID == character.dimId) {
+            verifyMinimumFirmware(newNfcData)
+        }
+        translator.setCharacterInByteArray(character, newNfcData)
+        translator.finalizeByteArrayFormat(newNfcData)
         newNfcData = translator.cryptographicTransformer.encryptData(newNfcData, nfcData.tag.id)
         Log.i(TAG, "Sending Character: ${newNfcData.toHexString()}")
 
@@ -166,6 +176,14 @@ class TagCommunicator(
 
         nfcData.transceive(translator.getOperationCommandBytes(header, OPERATION_TRANSFERED_TO_DEVICE))
 
+    }
+
+    private fun verifyMinimumFirmware(byteArray: ByteArray) {
+        val majorVersion = byteArray[380]
+        val minorVersion = byteArray[381]
+        if (majorVersion.toInt() == 1 && minorVersion.toInt() == 0) {
+            throw IllegalStateException("Device requires upgraded firmware for Dim Id 0 Characters")
+        }
     }
 
     @OptIn(ExperimentalStdlibApi::class)

@@ -1,6 +1,8 @@
 package com.github.cfogrady.vbnfc.be
 
+import com.github.cfogrady.vbnfc.data.DeviceType
 import com.github.cfogrady.vbnfc.data.NfcCharacter
+import java.time.LocalDate
 import java.util.Objects
 
 class BENfcCharacter(
@@ -28,6 +30,9 @@ class BENfcCharacter(
     activityLevel: Byte = 0,
     heartRateCurrent: UByte = 0u,
     transformationHistory: Array<Transformation> = Array(8) {Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE)},
+    vitalHistory: Array<DailyVitals> = Array(7) {
+        DailyVitals(0u, 0u, 0u, 0u)
+    },
     appReserved1: ByteArray = ByteArray(12), // this is a 12 byte array reserved for new app features, a custom app should be able to safely use this for custom features
     appReserved2: Array<UShort> = Array(3) { 0u},
     var trainingHp: UShort = 0u,
@@ -71,6 +76,7 @@ class BENfcCharacter(
         activityLevel = activityLevel,
         heartRateCurrent = heartRateCurrent,
         transformationHistory = transformationHistory,
+        vitalHistory = vitalHistory,
         appReserved1 = appReserved1,
         appReserved2 = appReserved2,
     )
@@ -81,6 +87,10 @@ class BENfcCharacter(
 
     fun setTrainingPp(trainingPp: UShort) {
         trophies = trainingPp
+    }
+
+    override fun getMatchingDeviceTypeId(): UShort {
+        return DeviceType.VitalBraceletBEDeviceType
     }
 
     override fun equals(other: Any?): Boolean {

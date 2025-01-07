@@ -2,7 +2,7 @@ package com.github.cfogrady.vbnfc.data
 
 import java.util.Objects
 
-open class NfcCharacter(
+abstract class NfcCharacter(
     val dimId: UShort,
     var charIndex: UShort = 0u,
     var stage: Byte = 0,
@@ -27,9 +27,27 @@ open class NfcCharacter(
     var activityLevel: Byte = 0,
     var heartRateCurrent: UByte = 0u,
     var transformationHistory: Array<Transformation> = Array(8) {Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE)},
+    var vitalHistory: Array<DailyVitals> = Array(7) {
+        // we don't use a LocalDate because sometimes we get values where only the day is provided
+        DailyVitals(0u, 0u, 0u, 0u)
+    },
     var appReserved1: ByteArray = ByteArray(12), // this is a 12 byte array reserved for new app features, a custom app should be able to safely use this for custom features
     var appReserved2: Array<UShort> = Array(3) {0u}, // this is a 3 element array reserved for new app features, a custom app should be able to safely use this for custom features
 ) {
+
+    data class DailyVitals(val vitalsGained: UShort, val year: UShort, val month: UByte, val day: UByte) {
+        fun validate() {
+            if ((year <= 2020u || year >=2036u) && year.toUInt() != 0u) {
+                throw IllegalArgumentException("Year $year is outside acceptable 2021-2035 range.")
+            }
+            if ((month < 1u || month > 12u) && month.toUInt() != 0u) {
+                throw IllegalArgumentException("Month $month is outside acceptable 1-12 range.")
+            }
+            if ((day < 1u || day > 31u) && day.toUInt() != 0u) {
+                throw IllegalArgumentException("Day $day is outside acceptable 1-31 range.")
+            }
+        }
+    }
 
     data class Transformation(
         val toCharIndex: UByte,
@@ -96,6 +114,18 @@ open class NfcCharacter(
         }
     }
 
+    fun validateVitalHistory() {
+        val expectedSize = 7
+        if(vitalHistory.size != expectedSize) {
+            throw IllegalArgumentException("VitalHistory is ${vitalHistory.size} but should be $expectedSize.")
+        }
+        for (dailyVitals in vitalHistory) {
+            dailyVitals.validate()
+        }
+    }
+
+    abstract fun getMatchingDeviceTypeId(): UShort
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -128,6 +158,7 @@ open class NfcCharacter(
         if (!transformationHistory.contentEquals(other.transformationHistory)) return false
         if (!appReserved1.contentEquals(other.appReserved1)) return false
         if (!appReserved2.contentEquals(other.appReserved2)) return false
+        if (!vitalHistory.contentEquals(other.vitalHistory)) return false
 
         return true
     }
@@ -158,6 +189,7 @@ open class NfcCharacter(
             activityLevel,
             heartRateCurrent,
             transformationHistory.contentHashCode(),
+            vitalHistory.contentHashCode(),
             appReserved1.contentHashCode(),
             appReserved2.contentHashCode()
         )
@@ -189,6 +221,7 @@ open class NfcCharacter(
     activityLevel=$activityLevel,
     heartRateCurrent=$heartRateCurrent,
     transformationHistory=${transformationHistory.contentToString()},
+    vitalHistory=${vitalHistory.contentToString()},
     appReserved1=${appReserved1.contentToString()},
     appReserved2=${appReserved2.contentToString()}
 )"""

@@ -10,6 +10,7 @@ import com.github.cfogrady.vbnfc.data.NfcHeader
 import com.github.cfogrady.vbnfc.data.block.AppBlockTranslator
 import com.github.cfogrady.vbnfc.data.block.CharacterTypeBlockTranslator
 import com.github.cfogrady.vbnfc.data.block.CharacterStatusBlockTranslator
+import com.github.cfogrady.vbnfc.data.block.VitalsHistoryBlockTranslator
 import com.github.cfogrady.vbnfc.getUInt16
 import java.nio.ByteOrder
 
@@ -22,6 +23,7 @@ class VBNfcDataTranslator(cryptographicTransformer: CryptographicTransformer, pr
         CharacterStatusBlockTranslator(), // 8
         VitalsHistoryBlockTranslator(), // 10-12
         VBTransformationHistoryBlockTranslator(), //13-15
+        SpecialMissionBlockTranslator() // 16-19
     )
 ) {
 

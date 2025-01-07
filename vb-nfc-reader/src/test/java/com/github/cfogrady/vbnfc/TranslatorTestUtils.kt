@@ -6,15 +6,29 @@ import kotlin.math.min
 class TranslatorTestUtils {
 
     companion object {
-        @OptIn(ExperimentalStdlibApi::class)
+        const val BLOCK_SIZE = 16
+        const val PAGE_SIZE = 4
+
         fun assertAllBlocksAreEqual(msg: String = "", expected: ByteArray, actual: ByteArray) {
-            val blockSize = 16
             Assert.assertEquals("$msg size mismatch", expected.size, actual.size)
-            for(i in actual.indices step blockSize) {
-                val block = i/16
-                val endIdx = min(i+blockSize, actual.size)
-                Assert.assertEquals("$msg block $block mismatch", expected.sliceArray(i..<endIdx).toHexString(), actual.sliceArray(i..<endIdx).toHexString())
+            for(i in actual.indices step BLOCK_SIZE) {
+                val blockIdx = i/ BLOCK_SIZE
+                val expectedBlock = expected.sliceArray(i..<i+16)
+                val actualBlock = actual.sliceArray(i..<i+16)
+                Assert.assertEquals("$msg block $blockIdx mismatch", formatBlockInHex(expectedBlock), formatBlockInHex(actualBlock))
             }
+        }
+
+        @OptIn(ExperimentalStdlibApi::class)
+        fun formatBlockInHex(block: ByteArray): String {
+            val builder = StringBuilder()
+            for(i in block.indices step PAGE_SIZE) {
+                for (j in i..<min(i+PAGE_SIZE, block.size)) {
+                    builder.append(block[j].toHexString())
+                }
+                builder.append(System.lineSeparator())
+            }
+            return builder.toString()
         }
     }
 }

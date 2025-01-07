@@ -1,7 +1,6 @@
 package com.github.cfogrady.vbnfc.vb
 
 import com.github.cfogrady.vbnfc.CryptographicTransformer
-import com.github.cfogrady.vbnfc.FormatPagedBytes
 import com.github.cfogrady.vbnfc.TranslatorTestUtils
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import io.mockk.every
@@ -9,7 +8,6 @@ import io.mockk.mockkClass
 import io.mockk.mockkStatic
 import org.junit.Assert
 import org.junit.Test
-import java.text.Normalizer.Form
 
 class VBNfcDataTranslatorTest {
 
@@ -223,4 +221,5 @@ class VBNfcDataTranslatorTest {
         translator.setCharacterInByteArray(testCharacter, bytesToOverwrite)
         TranslatorTestUtils.assertAllBlocksAreEqual("Data Set", PerfectSlot7_2023_04_26, bytesToOverwrite)
     }
+
 }
