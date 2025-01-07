@@ -123,6 +123,7 @@ class VBNfcDataTranslatorTest {
         val translator = VBNfcDataTranslator(mockCryptographicTransformer)
         val character = translator.parseNfcCharacter(testRaw)
         Assert.assertEquals(expectedCharacter, character)
+        println("Parsed Character: $character")
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.github.cfogrady.vbnfc.vb
 
 import com.github.cfogrady.vbnfc.data.NfcCharacter
+import java.time.LocalDate
 import java.util.Objects
 
 class VBNfcCharacter(
@@ -27,11 +28,21 @@ class VBNfcCharacter(
     totalBattlesLost: UShort = 0u,
     activityLevel: Byte = 0,
     heartRateCurrent: UByte = 0u,
-    transformationHistory: Array<Transformation> = Array(8) {Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE)},
+    transformationHistory: Array<Transformation> = Array(8) {
+        Transformation(
+            UByte.MAX_VALUE,
+            UShort.MAX_VALUE,
+            UByte.MAX_VALUE,
+            UByte.MAX_VALUE
+        )
+    },
     appReserved1: ByteArray = ByteArray(12),
     appReserved2: Array<UShort> = Array(3) { 0u},
     var generation: UShort = 0u,
     var totalTrophies: UShort = 0u,
+    var vitalHistory: Array<DailyVitals> = Array(7) {
+        DailyVitals(UShort.MIN_VALUE, LocalDate.MIN)
+    }
 ) : NfcCharacter(
     dimId = dimId,
     charIndex = charIndex,
@@ -61,6 +72,9 @@ class VBNfcCharacter(
     appReserved2 = appReserved2,
 ) {
 
+    data class DailyVitals(val vitalsGained: UShort, val date: LocalDate) {
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -69,7 +83,8 @@ class VBNfcCharacter(
         other as VBNfcCharacter
 
         return generation == other.generation &&
-                totalTrophies == other.totalTrophies
+                totalTrophies == other.totalTrophies &&
+                vitalHistory.contentEquals(other.vitalHistory)
     }
 
     override fun hashCode(): Int {
@@ -77,6 +92,7 @@ class VBNfcCharacter(
             super.hashCode(),
             generation,
             totalTrophies,
+            vitalHistory.contentHashCode()
         )
     }
 
@@ -87,6 +103,7 @@ ${super.toString()}
 VBNfcCharacter(
     generation=$generation,
     totalTrophies=$totalTrophies
+    vitalHistory=${vitalHistory.contentToString()}
 )"""
     }
 }

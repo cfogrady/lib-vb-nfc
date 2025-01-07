@@ -19,14 +19,13 @@ class VBNfcDataTranslator(cryptographicTransformer: CryptographicTransformer) : 
         CharacterTypeBlockTranslator(), // 4
         VBTransformationRequirementsBlockTranslator(), // 6
         CharacterStatusBlockTranslator(), // 8
+        VitalsHistoryBlockTranslator(), // 10-12
         VBTransformationHistoryBlockTranslator(), //13-15
     )
 ) {
 
     companion object {
         const val OPERATION_PAGE: Byte = 0x6
-
-        const val OTP_START_IDX = 352
     }
 
     override fun finalizeByteArrayFormat(bytes: ByteArray) {

@@ -13,7 +13,6 @@ class VBTransformationHistoryBlockTranslator : BlockTranslator<VBNfcCharacter> {
 
     @OptIn(ExperimentalUnsignedTypes::class)
     override fun parseBlockIntoCharacter(block: ByteArray, character: VBNfcCharacter) {
-        Log.i("VBTransformationHistoryBlockTranslator", FormatPagedBytes(block))
         val charIndices = UByteArray(9)
         val month = UByteArray(9)
         val year = UShortArray(9)
