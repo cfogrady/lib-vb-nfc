@@ -12,6 +12,12 @@ class BENfcCharacter(
     nextAdventureMissionStage: Byte = 1,
     mood: Byte = 50,
     vitalPoints: UShort = 0u,
+    itemEffectMentalStateValue: Byte = 0,
+    itemEffectMentalStateMinutesRemaining: Byte = 0,
+    itemEffectActivityLevelValue: Byte = 0,
+    itemEffectActivityLevelMinutesRemaining: Byte = 0,
+    itemEffectVitalPointsChangeValue: Byte = 0,
+    itemEffectVitalPointsChangeMinutesRemaining: Byte = 0,
     transformationCountdownInMinutes: UShort = 0u,
     injuryStatus: InjuryStatus = InjuryStatus.None,
     trainingPp: UShort = 0u,
@@ -21,17 +27,13 @@ class BENfcCharacter(
     totalBattlesLost: UShort = 0u,
     activityLevel: Byte = 0,
     heartRateCurrent: UByte = 0u,
-    transformationHistory: Array<Transformation> = Array(8) {Transformation(-1, -1, -1, -1)},
+    transformationHistory: Array<Transformation> = Array(8) {Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE)},
+    appReserved1: ByteArray = ByteArray(12), // this is a 12 byte array reserved for new app features, a custom app should be able to safely use this for custom features
+    appReserved2: Array<UShort> = Array(3) { 0u},
     var trainingHp: UShort = 0u,
     var trainingAp: UShort = 0u,
     var trainingBp: UShort = 0u,
     var remainingTrainingTimeInMinutes: UShort = 0u,
-    var itemEffectMentalStateValue: Byte = 0,
-    var itemEffectMentalStateMinutesRemaining: Byte = 0,
-    var itemEffectActivityLevelValue: Byte = 0,
-    var itemEffectActivityLevelMinutesRemaining: Byte = 0,
-    var itemEffectVitalPointsChangeValue: Byte = 0,
-    var itemEffectVitalPointsChangeMinutesRemaining: Byte = 0,
     var abilityRarity: AbilityRarity = AbilityRarity.None,
     var abilityType: UShort = 0u,
     var abilityBranch: UShort = 0u,
@@ -43,8 +45,6 @@ class BENfcCharacter(
     internal val otp0: ByteArray, // OTP matches the character to the dim
     internal val otp1: ByteArray, // OTP matches the character to the dim
     var characterCreationFirmwareVersion: FirmwareVersion = FirmwareVersion(1, 0),
-    var appReserved1: ByteArray = ByteArray(12), // this is a 12 byte array reserved for new app features, a custom app should be able to safely use this for custom features
-    var appReserved2: Array<UShort> = Array(3) {0u}, // this is a 3 element array reserved for new app features, a custom app should be able to safely use this for custom features
 ) :
     NfcCharacter(
         dimId = dimId,
@@ -55,7 +55,13 @@ class BENfcCharacter(
         nextAdventureMissionStage = nextAdventureMissionStage,
         mood = mood,
         vitalPoints = vitalPoints,
-        transformationCountdown = transformationCountdownInMinutes,
+        itemEffectMentalStateValue = itemEffectMentalStateValue,
+        itemEffectMentalStateMinutesRemaining = itemEffectMentalStateMinutesRemaining,
+        itemEffectActivityLevelValue = itemEffectActivityLevelValue,
+        itemEffectActivityLevelMinutesRemaining = itemEffectActivityLevelMinutesRemaining,
+        itemEffectVitalPointsChangeValue = itemEffectVitalPointsChangeValue,
+        itemEffectVitalPointsChangeMinutesRemaining = itemEffectVitalPointsChangeMinutesRemaining,
+        transformationCountdownInMinutes = transformationCountdownInMinutes,
         injuryStatus = injuryStatus,
         trophies = trainingPp,
         currentPhaseBattlesWon = currentPhaseBattlesWon,
@@ -65,6 +71,8 @@ class BENfcCharacter(
         activityLevel = activityLevel,
         heartRateCurrent = heartRateCurrent,
         transformationHistory = transformationHistory,
+        appReserved1 = appReserved1,
+        appReserved2 = appReserved2,
     )
 {
     fun getTrainingPp(): UShort {
@@ -74,16 +82,6 @@ class BENfcCharacter(
     fun setTrainingPp(trainingPp: UShort) {
         trophies = trainingPp
     }
-
-    fun getWinPercentage(): Byte {
-        val totalBatles = currentPhaseBattlesWon + currentPhaseBattlesLost
-        if (totalBatles == 0u) {
-            return 0
-        }
-        return ((100u * currentPhaseBattlesWon) / totalBatles).toByte()
-    }
-
-
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -96,12 +94,6 @@ class BENfcCharacter(
         if (trainingAp != other.trainingAp) return false
         if (trainingBp != other.trainingBp) return false
         if (remainingTrainingTimeInMinutes != other.remainingTrainingTimeInMinutes) return false
-        if (itemEffectMentalStateValue != other.itemEffectMentalStateValue) return false
-        if (itemEffectMentalStateMinutesRemaining != other.itemEffectMentalStateMinutesRemaining) return false
-        if (itemEffectActivityLevelValue != other.itemEffectActivityLevelValue) return false
-        if (itemEffectActivityLevelMinutesRemaining != other.itemEffectActivityLevelMinutesRemaining) return false
-        if (itemEffectVitalPointsChangeValue != other.itemEffectVitalPointsChangeValue) return false
-        if (itemEffectVitalPointsChangeMinutesRemaining != other.itemEffectVitalPointsChangeMinutesRemaining) return false
         if (abilityRarity != other.abilityRarity) return false
         if (abilityType != other.abilityType) return false
         if (abilityBranch != other.abilityBranch) return false
@@ -113,9 +105,6 @@ class BENfcCharacter(
         if (!otp0.contentEquals(other.otp0)) return false
         if (!otp1.contentEquals(other.otp1)) return false
         if (characterCreationFirmwareVersion != other.characterCreationFirmwareVersion) return false
-        if (!appReserved1.contentEquals(other.appReserved1)) return false
-        if (!appReserved2.contentEquals(other.appReserved2)) return false
-
         return true
     }
 
@@ -126,12 +115,6 @@ class BENfcCharacter(
             trainingAp,
             trainingBp,
             remainingTrainingTimeInMinutes,
-            itemEffectMentalStateValue,
-            itemEffectMentalStateMinutesRemaining,
-            itemEffectActivityLevelValue,
-            itemEffectActivityLevelMinutesRemaining,
-            itemEffectVitalPointsChangeValue,
-            itemEffectVitalPointsChangeMinutesRemaining,
             abilityRarity,
             abilityType,
             abilityBranch,
@@ -142,9 +125,7 @@ class BENfcCharacter(
             itemRemainingTime,
             otp0.contentHashCode(),
             otp1.contentHashCode(),
-            characterCreationFirmwareVersion,
-            appReserved1.contentHashCode(),
-            appReserved2.contentHashCode())
+            characterCreationFirmwareVersion)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -156,12 +137,6 @@ BENfcCharacter(
     trainingAp=$trainingAp,
     trainingBp=$trainingBp,
     remainingTrainingTimeInMinutes=$remainingTrainingTimeInMinutes,
-    itemEffectMentalStateValue=$itemEffectMentalStateValue,
-    itemEffectMentalStateMinutesRemaining=$itemEffectMentalStateMinutesRemaining,
-    itemEffectActivityLevelValue=$itemEffectActivityLevelValue,
-    itemEffectActivityLevelMinutesRemaining=$itemEffectActivityLevelMinutesRemaining,
-    itemEffectVitalPointsChangeValue=$itemEffectVitalPointsChangeValue,
-    itemEffectVitalPointsChangeMinutesRemaining=$itemEffectVitalPointsChangeMinutesRemaining,
     abilityRarity=$abilityRarity,
     abilityType=$abilityType,
     abilityBranch=$abilityBranch,
@@ -172,9 +147,7 @@ BENfcCharacter(
     itemRemainingTime=$itemRemainingTime,
     otp0=${otp0.toHexString()},
     otp1=${otp1.toHexString()},
-    characterCreationFirmwareVersion=$characterCreationFirmwareVersion,
-    appReserved1=${appReserved1.contentToString()},
-    appReserved2=${appReserved2.contentToString()}
+    characterCreationFirmwareVersion=$characterCreationFirmwareVersion
 )"""
     }
 

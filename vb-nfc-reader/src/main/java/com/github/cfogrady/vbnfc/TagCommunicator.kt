@@ -6,6 +6,7 @@ import com.github.cfogrady.vbnfc.be.BENfcDataTranslator
 import com.github.cfogrady.vbnfc.data.DeviceType
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import com.github.cfogrady.vbnfc.data.NfcHeader
+import com.github.cfogrady.vbnfc.vb.VBNfcDataTranslator
 import java.nio.ByteOrder
 
 class TagCommunicator(
@@ -34,11 +35,14 @@ class TagCommunicator(
 
         fun getInstance(nfcData: NfcA, deviceTypeIdSecrets: Map<UShort, CryptographicTransformer>): TagCommunicator {
             val checksumCalculator = ChecksumCalculator()
-            val deviceToTranslator = HashMap<UShort, NfcDataTranslator>()
+            val deviceToTranslator = HashMap<UShort, NfcDataTranslator<*>>()
             for (keyValue in deviceTypeIdSecrets) {
                 when(keyValue.key) {
                     DeviceType.VitalBraceletBEDeviceType -> {
                         deviceToTranslator[keyValue.key] = BENfcDataTranslator(keyValue.value, checksumCalculator)
+                    }
+                    DeviceType.VitalSeriesDeviceType -> {
+                        deviceToTranslator[keyValue.key] = VBNfcDataTranslator(keyValue.value)
                     }
                     else -> {
                         throw IllegalArgumentException("DeviceId ${keyValue.key} Provided Without Known Parser")
@@ -50,7 +54,7 @@ class TagCommunicator(
 
     }
 
-    data class DeviceTranslatorAndHeader(val nfcHeader: NfcHeader, val translator: NfcDataTranslator)
+    data class DeviceTranslatorAndHeader(val nfcHeader: NfcHeader, val translator: NfcDataTranslator<*>)
 
     @OptIn(ExperimentalStdlibApi::class)
     fun receiveCharacter(): NfcCharacter {
@@ -64,9 +68,9 @@ class TagCommunicator(
         passwordAuth(translator.cryptographicTransformer)
         Log.i(TAG, "Reading Character")
         val encryptedCharacterData = readNfcData()
-        Log.i(TAG, "Raw NFC Data Received: ${encryptedCharacterData.toHexString()}")
         val decryptedCharacterData = translator.cryptographicTransformer.decryptData(encryptedCharacterData, nfcData.tag.id)
         checksumCalculator.checkChecksums(decryptedCharacterData)
+        Log.i(TAG, "Decrypted NFC Data Received: ${decryptedCharacterData.toHexString()}")
         val nfcCharacter = translator.parseNfcCharacter(decryptedCharacterData)
         Log.i(TAG, "Known Character Stats: $nfcCharacter")
         Log.i(TAG, "Signaling operation complete")
@@ -77,7 +81,7 @@ class TagCommunicator(
     @OptIn(ExperimentalStdlibApi::class)
     private fun fetchDeviceTranslatorAndHeader(): DeviceTranslatorAndHeader {
         val readData = nfcData.transceive(byteArrayOf(NFC_READ_COMMAND, HEADER_PAGE))
-        Log.i("TagCommunicator", "First 4 Pages: ${readData.toHexString()}")
+        Log.i("TagCommunicator", "First 4 Pages: ${FormatPagedBytes(readData)}")
         val deviceTypeId = readData.getUInt16(4, ByteOrder.BIG_ENDIAN)
         val translator = nfcDataTranslatorFactory.getNfcDataTranslator(deviceTypeId)
         val header = translator.parseHeader(readData)
@@ -111,7 +115,7 @@ class TagCommunicator(
         nfcData.transceive(translator.getOperationCommandBytes(header, OPERATION_CHECK_DIM))
     }
 
-    private fun defaultNfcDataGenerator(translator: NfcDataTranslator, character: NfcCharacter): ByteArray {
+    private fun defaultNfcDataGenerator(translator: NfcDataTranslator<*>, character: NfcCharacter): ByteArray {
         val currentNfcData = readNfcData()
         val newNfcData = translator.cryptographicTransformer.decryptData(currentNfcData, nfcData.tag.id)
         translator.setCharacterInByteArray(character, newNfcData)
@@ -126,7 +130,7 @@ class TagCommunicator(
     // provided to the sendCharacter method and returns the decrypted byte array data to be sent
     // back to the device.
     @OptIn(ExperimentalStdlibApi::class)
-    fun sendCharacter(character: NfcCharacter, nfcDataGenerator: (NfcDataTranslator, NfcCharacter) -> ByteArray = this::defaultNfcDataGenerator) {
+    fun sendCharacter(character: NfcCharacter, nfcDataGenerator: (NfcDataTranslator<*>, NfcCharacter) -> ByteArray = this::defaultNfcDataGenerator) {
         Log.i(TAG, "Sending Character: $character")
         val deviceTranslatorAndHeader = fetchDeviceTranslatorAndHeader()
         val translator = deviceTranslatorAndHeader.translator
@@ -183,7 +187,7 @@ class TagCommunicator(
     // addDataTranslator adds a new data translator to be used with the specified deviceTypeId.
     // This can be used to keep the same general communication protocol, but allows for a different
     // parsing of the data.
-    fun addDataTranslator(nfcDataTranslator: NfcDataTranslator, deviceTypeId: UShort) {
+    fun addDataTranslator(nfcDataTranslator: NfcDataTranslator<*>, deviceTypeId: UShort) {
         nfcDataTranslatorFactory.addNfcDataTranslator(nfcDataTranslator, deviceTypeId)
     }
 
