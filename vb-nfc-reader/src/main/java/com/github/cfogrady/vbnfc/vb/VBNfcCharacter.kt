@@ -27,7 +27,7 @@ class VBNfcCharacter(
     totalBattlesLost: UShort = 0u,
     activityLevel: Byte = 0,
     heartRateCurrent: UByte = 0u,
-    transformationHistory: Array<Transformation> = Array(8) {Transformation(-1, -1, -1, -1)},
+    transformationHistory: Array<Transformation> = Array(8) {Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE)},
     appReserved1: ByteArray = ByteArray(12),
     appReserved2: Array<UShort> = Array(3) { 0u},
     var generation: UShort = 0u,

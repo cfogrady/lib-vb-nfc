@@ -26,16 +26,16 @@ open class NfcCharacter(
     var totalBattlesLost: UShort = 0u,
     var activityLevel: Byte = 0,
     var heartRateCurrent: UByte = 0u,
-    var transformationHistory: Array<Transformation> = Array(8) {Transformation(-1, -1, -1, -1)},
+    var transformationHistory: Array<Transformation> = Array(8) {Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE)},
     var appReserved1: ByteArray = ByteArray(12), // this is a 12 byte array reserved for new app features, a custom app should be able to safely use this for custom features
     var appReserved2: Array<UShort> = Array(3) {0u}, // this is a 3 element array reserved for new app features, a custom app should be able to safely use this for custom features
 ) {
 
     data class Transformation(
-        val toCharIndex: Byte,
-        val yearsSince1988: Byte,
-        val month: Byte,
-        val day: Byte)
+        val toCharIndex: UByte,
+        val year: UShort,
+        val month: UByte,
+        val day: UByte)
 
     enum class AbilityRarity {
         None,
@@ -170,5 +170,16 @@ open class NfcCharacter(
 )"""
     }
 
+}
 
+@OptIn(ExperimentalStdlibApi::class)
+fun Byte.convertFromHexToDec(): UByte {
+    val result = this.toHexString()
+    return result.toUByte()
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+fun UByte.convertFromDecToHex(): Byte {
+    val str = this.toString()
+    return str.hexToByte()
 }

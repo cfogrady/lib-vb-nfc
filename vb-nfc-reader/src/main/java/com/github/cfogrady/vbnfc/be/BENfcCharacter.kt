@@ -27,7 +27,7 @@ class BENfcCharacter(
     totalBattlesLost: UShort = 0u,
     activityLevel: Byte = 0,
     heartRateCurrent: UByte = 0u,
-    transformationHistory: Array<Transformation> = Array(8) {Transformation(-1, -1, -1, -1)},
+    transformationHistory: Array<Transformation> = Array(8) {Transformation(UByte.MAX_VALUE, UShort.MAX_VALUE, UByte.MAX_VALUE, UByte.MAX_VALUE)},
     appReserved1: ByteArray = ByteArray(12), // this is a 12 byte array reserved for new app features, a custom app should be able to safely use this for custom features
     appReserved2: Array<UShort> = Array(3) { 0u},
     var trainingHp: UShort = 0u,

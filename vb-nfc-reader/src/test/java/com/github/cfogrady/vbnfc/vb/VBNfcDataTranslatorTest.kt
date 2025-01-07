@@ -1,6 +1,7 @@
 package com.github.cfogrady.vbnfc.vb
 
 import com.github.cfogrady.vbnfc.CryptographicTransformer
+import com.github.cfogrady.vbnfc.TranslatorTestUtils
 import com.github.cfogrady.vbnfc.data.NfcCharacter
 import io.mockk.every
 import io.mockk.mockkClass
@@ -20,7 +21,7 @@ class VBNfcDataTranslatorTest {
         @OptIn(ExperimentalStdlibApi::class)
         val AdultSlot3_2023_03_26 = "000000000004745700000000240000f3000000000004745700000000240000f3014000700401000000000000000000b6014000700401000000000000000000b600000000000000000003000d0303001600000000000000000003000d0303001600010000000000000000000000000001000100000000000000000000000000010132013a000000000000000000003ba90132013a000000000000000000003ba9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010002000300ff00ff2101062c220213230325230326ffffffffffffc800ff00ff00fffffffffffffffffffff4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ff00ff00ff00ff00ff22121645fffffffffffffffffffffffffffffff100ff00ff00fffffffffffffffffffff4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000772303260000000004250103f0000000772303260000000004250103f000000300003e00000400000b0000005000000300003e00000400000b0000005000000024122024121124121024120922000000241220241211241210241209222402222402210000000000000000008f2402222402210000000000000000008f".hexToByteArray()
         @OptIn(ExperimentalStdlibApi::class)
-        val PerfectSlot7_2023_04_26 = "".hexToByteArray()
+        val PerfectSlot7_2023_04_26 = "000000000004745700000000240000f3000000000004745700000000240000f3014000700401000000000000000000b6014000700401000000000000000000b600000000000000000007000d0403001b00000000000000000007000d0403001b000100000000000000000000000000010001000000000000000000000000000101320142000000000000000000003ab001320142000000000000000000003ab00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100020003000700ff21010634220213230325230326230426ffffff1800ff00ff00fffffffffffffffffffff4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ff00ff00ff00ff00ff22121645fffffffffffffffffffffffffffffff100ff00ff00fffffffffffffffffffff4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b8230426000000000425010333000001b823042600000000042501033300000300003e00000400000b0000005000000300003e00000400000b0000005000000024122024121124121024120922000000241220241211241210241209222402222402210000000000000000008f2402222402210000000000000000008f".hexToByteArray()
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -33,15 +34,15 @@ class VBNfcDataTranslatorTest {
             1
         }
 
-        val testRaw = "000000000004745700000000240000f3000000000004745700000000240000f3014000700401000000000000000000b6014000700401000000000000000000b60000000000000000000200040204202c0000000000000000000200040204202c0002000000000000000000000000000200020000000000000000000000000002010000500000000000000000000000510100005000000000000000000000005100000000241220000000000000000056000000000000000000000000241211472412102412092401262401250000001a0000000100ff00ff00ff00ff24012648240127ffffffffffffffffffffffff4000ff00ff00fffffffffffffffffffff4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ff00ff00ff00ff00ff22121645fffffffffffffffffffffffffffffff100ff00ff00fffffffffffffffffffff4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002501030000000003241220820000000025010300000000032412208200003e00000400000b0000000000004d00003e00000400000b0000000000004d00000024121124121024120924022214000000241211241210241209240222142402212402200000000000000000008d2402212402200000000000000000008d".hexToByteArray()
+        val testRaw = PerfectSlot7_2023_04_26
         val expectedCharacter = VBNfcCharacter(
-            dimId=4u,
-            charIndex=2u,
-            stage=2,
-            attribute=NfcCharacter.Attribute.Free,
-            ageInDays=32,
+            dimId=13u,
+            charIndex=7u,
+            stage=4,
+            attribute=NfcCharacter.Attribute.Vaccine,
+            ageInDays=0,
             nextAdventureMissionStage=1,
-            mood=0,
+            mood=50,
             vitalPoints=0u,
             itemEffectMentalStateValue=0,
             itemEffectMentalStateMinutesRemaining=0,
@@ -49,80 +50,170 @@ class VBNfcDataTranslatorTest {
             itemEffectActivityLevelMinutesRemaining=0,
             itemEffectVitalPointsChangeValue=0,
             itemEffectVitalPointsChangeMinutesRemaining=0,
-            transformationCountdownInMinutes = 0u,
+            transformationCountdownInMinutes = 58u,
             injuryStatus=NfcCharacter.InjuryStatus.None,
             trophies=0u,
             currentPhaseBattlesWon=0u,
             currentPhaseBattlesLost=0u,
             totalBattlesWon=0u,
             totalBattlesLost=0u,
-            activityLevel=0,
-            heartRateCurrent=80u,
+            activityLevel=1,
+            heartRateCurrent=66u,
             transformationHistory= arrayOf(
                 NfcCharacter.Transformation(
-                    toCharIndex = 0,
-                    yearsSince1988 = 0,
-                    month = 0,
-                    day = 1),
+                    toCharIndex = 0u,
+                    year = 2021u,
+                    month = 1u,
+                    day = 6u),
                 NfcCharacter.Transformation(
-                    toCharIndex = 0,
-                    yearsSince1988 = -1,
-                    month = 0,
-                    day = -1
+                    toCharIndex = 1u,
+                    year = 2022u,
+                    month = 2u,
+                    day = 13u
                 ),
                 NfcCharacter.Transformation(
-                    toCharIndex = 0,
-                    yearsSince1988 = -1,
-                    month = 0,
-                    day = -1
+                    toCharIndex = 2u,
+                    year = 2023u,
+                    month = 3u,
+                    day = 25u
                 ),
                 NfcCharacter.Transformation(
-                    toCharIndex = 36,
-                    yearsSince1988 = 1,
-                    month = 39,
-                    day = -1
+                    toCharIndex = 3u,
+                    year = 2023u,
+                    month = 3u,
+                    day = 26u
                 ),
                 NfcCharacter.Transformation(
-                    toCharIndex = -1,
-                    yearsSince1988 = -1,
-                    month = -1,
-                    day = -1
+                    toCharIndex = 7u,
+                    year = 2023u,
+                    month = 4u,
+                    day = 26u
                 ),
                 NfcCharacter.Transformation(
-                    toCharIndex = -1,
-                    yearsSince1988 = -1,
-                    month = -1,
-                    day = -1
+                    toCharIndex = UByte.MAX_VALUE,
+                    year = UShort.MAX_VALUE,
+                    month = UByte.MAX_VALUE,
+                    day = UByte.MAX_VALUE
                 ),
                 NfcCharacter.Transformation(
-                    toCharIndex = 0,
-                    yearsSince1988 = -1,
-                    month = 0,
-                    day = -1
+                    toCharIndex = UByte.MAX_VALUE,
+                    year = UShort.MAX_VALUE,
+                    month = UByte.MAX_VALUE,
+                    day = UByte.MAX_VALUE
                 ),
                 NfcCharacter.Transformation(
-                    toCharIndex = 0,
-                    yearsSince1988 = -1,
-                    month = -1,
-                    day = -1
+                    toCharIndex = UByte.MAX_VALUE,
+                    year = UShort.MAX_VALUE,
+                    month = UByte.MAX_VALUE,
+                    day = UByte.MAX_VALUE
+                ),
+                NfcCharacter.Transformation(
+                    toCharIndex = UByte.MAX_VALUE,
+                    year = UShort.MAX_VALUE,
+                    month = UByte.MAX_VALUE,
+                    day = UByte.MAX_VALUE
                 )),
             appReserved1= byteArrayOf(0, 0, 0, 0, 0, 4, 116, 87, 0, 0, 0, 0),
             appReserved2= arrayOf(0u, 0u, 0u),
-            generation=2u,
+            generation=1u,
             totalTrophies=0u,
         )
 
         val mockCryptographicTransformer = mockkClass(CryptographicTransformer::class)
         val translator = VBNfcDataTranslator(mockCryptographicTransformer)
         val character = translator.parseNfcCharacter(testRaw)
-        println("Baby 0 Parse")
-        translator.parseNfcCharacter(BabySlot0_2021_01_06)
-        println("Baby 1 Parse")
-        translator.parseNfcCharacter(BabySlot1_2022_02_13)
-        println("Child Parse")
-        translator.parseNfcCharacter(ChildSlot2_2023_03_25)
-        println("Adult Parse")
-        translator.parseNfcCharacter(AdultSlot3_2023_03_26)
         Assert.assertEquals(expectedCharacter, character)
+    }
+
+    @Test
+    fun testFormatting() {
+        val testCharacter = VBNfcCharacter(
+            dimId=13u,
+            charIndex=7u,
+            stage=4,
+            attribute=NfcCharacter.Attribute.Vaccine,
+            ageInDays=0,
+            nextAdventureMissionStage=1,
+            mood=50,
+            vitalPoints=0u,
+            itemEffectMentalStateValue=0,
+            itemEffectMentalStateMinutesRemaining=0,
+            itemEffectActivityLevelValue=0,
+            itemEffectActivityLevelMinutesRemaining=0,
+            itemEffectVitalPointsChangeValue=0,
+            itemEffectVitalPointsChangeMinutesRemaining=0,
+            transformationCountdownInMinutes = 58u,
+            injuryStatus=NfcCharacter.InjuryStatus.None,
+            trophies=0u,
+            currentPhaseBattlesWon=0u,
+            currentPhaseBattlesLost=0u,
+            totalBattlesWon=0u,
+            totalBattlesLost=0u,
+            activityLevel=1,
+            heartRateCurrent=66u,
+            transformationHistory= arrayOf(
+                NfcCharacter.Transformation(
+                    toCharIndex = 0u,
+                    year = 2021u,
+                    month = 1u,
+                    day = 6u),
+                NfcCharacter.Transformation(
+                    toCharIndex = 1u,
+                    year = 2022u,
+                    month = 2u,
+                    day = 13u
+                ),
+                NfcCharacter.Transformation(
+                    toCharIndex = 2u,
+                    year = 2023u,
+                    month = 3u,
+                    day = 25u
+                ),
+                NfcCharacter.Transformation(
+                    toCharIndex = 3u,
+                    year = 2023u,
+                    month = 3u,
+                    day = 26u
+                ),
+                NfcCharacter.Transformation(
+                    toCharIndex = 7u,
+                    year = 2023u,
+                    month = 4u,
+                    day = 26u
+                ),
+                NfcCharacter.Transformation(
+                    toCharIndex = UByte.MAX_VALUE,
+                    year = UShort.MAX_VALUE,
+                    month = UByte.MAX_VALUE,
+                    day = UByte.MAX_VALUE
+                ),
+                NfcCharacter.Transformation(
+                    toCharIndex = UByte.MAX_VALUE,
+                    year = UShort.MAX_VALUE,
+                    month = UByte.MAX_VALUE,
+                    day = UByte.MAX_VALUE
+                ),
+                NfcCharacter.Transformation(
+                    toCharIndex = UByte.MAX_VALUE,
+                    year = UShort.MAX_VALUE,
+                    month = UByte.MAX_VALUE,
+                    day = UByte.MAX_VALUE
+                ),
+                NfcCharacter.Transformation(
+                    toCharIndex = UByte.MAX_VALUE,
+                    year = UShort.MAX_VALUE,
+                    month = UByte.MAX_VALUE,
+                    day = UByte.MAX_VALUE
+                )),
+            appReserved1= byteArrayOf(0, 0, 0, 0, 0, 4, 116, 87, 0, 0, 0, 0),
+            appReserved2= arrayOf(0u, 0u, 0u),
+            generation=1u,
+            totalTrophies=0u,
+        )
+        val mockCryptographicTransformer = mockkClass(CryptographicTransformer::class)
+        val translator = VBNfcDataTranslator(mockCryptographicTransformer)
+        val bytesToOverwrite = PerfectSlot7_2023_04_26.copyOf()
+        translator.setCharacterInByteArray(testCharacter, bytesToOverwrite)
+        TranslatorTestUtils.assertAllBlocksAreEqual("Data Set", PerfectSlot7_2023_04_26, bytesToOverwrite)
     }
 }
