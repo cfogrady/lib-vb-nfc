@@ -29,6 +29,7 @@ class BETransformationHistoryBlockTranslator(private val transformationBlock: In
     }
 
     override fun writeCharacterIntoBlocks(character: BENfcCharacter, block: ByteArray): ByteArray {
+        character.validateTransformationHistory(8)
         for(i in 0..<blockHistorySize) {
             val transformation = character.transformationHistory[startTransformationIndex + i]
             block[i*4] = transformation.toCharIndex.toByte()

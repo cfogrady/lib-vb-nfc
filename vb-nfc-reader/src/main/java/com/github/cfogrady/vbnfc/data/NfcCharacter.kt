@@ -35,7 +35,22 @@ open class NfcCharacter(
         val toCharIndex: UByte,
         val year: UShort,
         val month: UByte,
-        val day: UByte)
+        val day: UByte) {
+        fun validate() {
+            if (toCharIndex == UByte.MAX_VALUE && year == UShort.MAX_VALUE && month == UByte.MAX_VALUE && day == UByte.MAX_VALUE) {
+                return
+            }
+            if (year <= 2020u || year >=2036u) {
+                throw IllegalArgumentException("Year $year is outside acceptable 2021-2035 range.")
+            }
+            if (month < 1u || month > 12u) {
+                throw IllegalArgumentException("Month $month is outside acceptable 1-12 range.")
+            }
+            if (day < 1u || day > 31u) {
+                throw IllegalArgumentException("Day $day is outside acceptable 1-31 range.")
+            }
+        }
+    }
 
     enum class AbilityRarity {
         None,
@@ -70,6 +85,15 @@ open class NfcCharacter(
             return 0
         }
         return ((100u * currentPhaseBattlesWon) / totalBatles).toByte()
+    }
+
+    fun validateTransformationHistory(expectedSize: Int) {
+        for (transformation in transformationHistory) {
+            transformation.validate()
+        }
+        if (transformationHistory.size != expectedSize) {
+            throw IllegalArgumentException("TransformationHistory is ${transformationHistory.size} but should be $expectedSize.")
+        }
     }
 
     override fun equals(other: Any?): Boolean {

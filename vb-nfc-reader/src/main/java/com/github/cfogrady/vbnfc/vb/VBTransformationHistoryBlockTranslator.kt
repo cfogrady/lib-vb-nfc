@@ -62,6 +62,7 @@ class VBTransformationHistoryBlockTranslator : BlockTranslator<VBNfcCharacter> {
     }
 
     override fun writeCharacterIntoBlocks(character: VBNfcCharacter, block: ByteArray): ByteArray {
+        character.validateTransformationHistory(9)
         // block 1
         for(i in 0..5) {
             block[i*2+1] = character.transformationHistory[i].toCharIndex.toByte()
