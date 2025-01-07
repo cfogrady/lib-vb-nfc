@@ -1,5 +1,6 @@
 package com.github.cfogrady.vbnfc.vb
 
+import com.github.cfogrady.vbnfc.ChecksumCalculator
 import com.github.cfogrady.vbnfc.CryptographicTransformer
 import com.github.cfogrady.vbnfc.NfcDataTranslator
 import com.github.cfogrady.vbnfc.TagCommunicator
@@ -12,7 +13,7 @@ import com.github.cfogrady.vbnfc.data.block.CharacterStatusBlockTranslator
 import com.github.cfogrady.vbnfc.getUInt16
 import java.nio.ByteOrder
 
-class VBNfcDataTranslator(cryptographicTransformer: CryptographicTransformer) : NfcDataTranslator<VBNfcCharacter>(
+class VBNfcDataTranslator(cryptographicTransformer: CryptographicTransformer, private val checksumCalculator: ChecksumCalculator = ChecksumCalculator()) : NfcDataTranslator<VBNfcCharacter>(
     cryptographicTransformer,
     arrayOf(
         AppBlockTranslator(), // 0
@@ -29,7 +30,20 @@ class VBNfcDataTranslator(cryptographicTransformer: CryptographicTransformer) : 
     }
 
     override fun finalizeByteArrayFormat(bytes: ByteArray) {
-        TODO("Not yet implemented")
+        checksumCalculator.recalculateChecksums(bytes)
+        performPageBlockDuplications(bytes, BlocksWithCopiesInterweaved, 16)
+        performPageBlockDuplications(bytes, SequentialBlocksWithCopyFollowing, 64)
+    }
+
+    private val BlocksWithCopiesInterweaved = intArrayOf(0, 2, 4, 6, 8, 46, 48, 50, 52)
+    private val SequentialBlocksWithCopyFollowing = intArrayOf(16, 17, 18, 19)
+    private fun performPageBlockDuplications(data: ByteArray, blocksToCopy: IntArray = BlocksWithCopiesInterweaved, copyOffset: Int = 16) {
+        for (blockIndex in blocksToCopy) {
+            val firstIndex = blockIndex*16
+            for (i in firstIndex..firstIndex + 15) {
+                data[i+copyOffset] = data[i]
+            }
+        }
     }
 
     override fun getOperationCommandBytes(header: NfcHeader, operation: Byte): ByteArray {

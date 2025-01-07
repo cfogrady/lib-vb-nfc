@@ -24,8 +24,8 @@ fun ConvertToPages(data: ByteArray, header: ByteArray? = null) : List<ByteArray>
 fun FormatPagedBytes(data: ByteArray): String {
     val builder = StringBuilder()
     for(i in data.indices step 4) {
-        if(i > 0 && i % 16 == 0) {
-            builder.append(System.lineSeparator())
+        if(i % 16 == 0) {
+            builder.append("Block ${i/16}:").append(System.lineSeparator())
         }
         for (j in i..<min(i+4, data.size)) {
             builder.append(String.format("%03d", data[j].toUByte().toShort())).append(" ")

@@ -86,12 +86,12 @@ class BENfcDataTranslator(
         return header
     }
 
-    // a block being 4 pages
-    private val firstIndicesOfBlocksToCopy = intArrayOf(32, 64, 96, 128, 256, 416)
-    private fun performPageBlockDuplications(data: ByteArray) {
-        for (firstIndex in firstIndicesOfBlocksToCopy) {
+    private val BlocksWithCopiesInterweaved = intArrayOf(2, 4, 6, 8, 16, 18, 20, 26)
+    private fun performPageBlockDuplications(data: ByteArray, blocksToCopy: IntArray = BlocksWithCopiesInterweaved, copyOffset: Int = 16) {
+        for (blockIndex in blocksToCopy) {
+            val firstIndex = blockIndex*16
             for (i in firstIndex..firstIndex + 15) {
-                data[i+16] = data[i]
+                data[i+copyOffset] = data[i]
             }
         }
     }

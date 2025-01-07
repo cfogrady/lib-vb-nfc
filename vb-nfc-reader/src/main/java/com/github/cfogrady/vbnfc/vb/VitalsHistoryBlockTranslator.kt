@@ -1,5 +1,6 @@
 package com.github.cfogrady.vbnfc.vb
 
+import android.util.Log
 import com.github.cfogrady.vbnfc.FormatPagedBytes
 import com.github.cfogrady.vbnfc.data.block.BlockTranslator
 import com.github.cfogrady.vbnfc.data.convertFromDecToHex
@@ -14,7 +15,7 @@ class VitalsHistoryBlockTranslator : BlockTranslator<VBNfcCharacter> {
     override val endBlock: Int = 12
 
     override fun parseBlockIntoCharacter(block: ByteArray, character: VBNfcCharacter) {
-        println(FormatPagedBytes(block))
+        Log.i("VitalsHistoryBlockTranslator", FormatPagedBytes(block))
 
         // block 10
         val vitals = Array<UShort>(7) {0u}
@@ -22,9 +23,9 @@ class VitalsHistoryBlockTranslator : BlockTranslator<VBNfcCharacter> {
         val months = ByteArray(7) {0}
         val days = ByteArray(7) {0}
         vitals[0] = block.getUInt16(0)
-        years[0] = block[2]
-        months[0] = block[3]
-        days[0] = block[4]
+        years[0] = block[4]
+        months[0] = block[5]
+        days[0] = block[6]
 
         // block 11
         for(i in 1..6) {
