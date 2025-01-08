@@ -10,6 +10,8 @@ import com.github.cfogrady.vbnfc.vb.SpecialMission
 import com.github.cfogrady.vbnfc.vb.VBNfcCharacter
 import com.github.cfogrady.vbnfc.vb.VBNfcDataTranslator
 import java.nio.ByteOrder
+import kotlin.experimental.and
+import kotlin.experimental.or
 
 class TagCommunicator(
     private val nfcData: NfcA,
@@ -24,9 +26,14 @@ class TagCommunicator(
         const val NFC_READ_COMMAND: Byte = 0x30
         const val NFC_WRITE_COMMAND: Byte = 0xA2.toByte()
 
+        // status is a combination of bit flags
+        const val STATUS_READY_FLAG: Byte = 0b00000001
+        const val STATUS_DIM_READY_FLAG: Byte = 0b00000010
+        const val STATUS_AVATAR_ACTIVE_FLAG: Byte = 0b00000100
+        const val STATUS_SPOT_FLAG: Byte = 0b00001000
+
         const val STATUS_IDLE: Byte = 0
-        const val STATUS_READY: Byte = 1
-        const val STATUS_DIM_READY: Byte = 3
+        val STATUS_DIM_IS_READY = STATUS_READY_FLAG or STATUS_DIM_READY_FLAG
 
         const val OPERATION_IDLE: Byte = 0
         const val OPERATION_READY: Byte = 1
@@ -140,7 +147,7 @@ class TagCommunicator(
         val deviceTranslatorAndHeader = fetchDeviceTranslatorAndHeader()
         val translator = deviceTranslatorAndHeader.translator
         val header = deviceTranslatorAndHeader.nfcHeader
-        if(header.status != STATUS_DIM_READY || header.operation != OPERATION_READY) {
+        if((header.status and STATUS_DIM_IS_READY != STATUS_DIM_IS_READY) || header.operation != OPERATION_READY) {
             throw IllegalStateException("Device is not ready")
         }
         // ensure the dim id matches the expected
@@ -165,8 +172,6 @@ class TagCommunicator(
         translator.setCharacterInByteArray(character, newNfcData)
         translator.finalizeByteArrayFormat(newNfcData)
         newNfcData = translator.cryptographicTransformer.encryptData(newNfcData, nfcData.tag.id)
-        Log.i(TAG, "Sending Character: ${newNfcData.toHexString()}")
-
 
         // write nfc data
         val pagedData = ConvertToPages(newNfcData)
