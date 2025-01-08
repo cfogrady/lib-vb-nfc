@@ -21,14 +21,31 @@ fun ConvertToPages(data: ByteArray, header: ByteArray? = null) : List<ByteArray>
     return pages
 }
 
+const val PAGE_SIZE = 4
+
 fun FormatPagedBytes(data: ByteArray): String {
     val builder = StringBuilder()
-    for(i in data.indices step 4) {
+    for(i in data.indices step PAGE_SIZE) {
         if(i % 16 == 0) {
             builder.append("Block ${i/16}:").append(System.lineSeparator())
         }
-        for (j in i..<min(i+4, data.size)) {
+        for (j in i..<min(i+ PAGE_SIZE, data.size)) {
             builder.append(String.format("%03d", data[j].toUByte().toShort())).append(" ")
+        }
+        builder.append(System.lineSeparator())
+    }
+    return builder.toString()
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+fun FormatBlockInHex(block: ByteArray): String {
+    val builder = StringBuilder()
+    for(i in block.indices step PAGE_SIZE) {
+        if(i % 16 == 0) {
+            builder.append("Block ${i/16}:").append(System.lineSeparator())
+        }
+        for (j in i..<min(i+PAGE_SIZE, block.size)) {
+            builder.append(block[j].toHexString())
         }
         builder.append(System.lineSeparator())
     }
