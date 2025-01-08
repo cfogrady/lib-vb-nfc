@@ -62,7 +62,7 @@ class TagCommunicator(
     data class DeviceTranslatorAndHeader(val nfcHeader: NfcHeader, val translator: NfcDataTranslator<*>)
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun receiveCharacter(): NfcCharacter {
+    fun receiveCharacter(confirmReceive: (NfcCharacter)->Boolean = {true}): NfcCharacter {
         val translatorAndHeader = fetchDeviceTranslatorAndHeader()
         val header = translatorAndHeader.nfcHeader
         val translator = translatorAndHeader.translator
@@ -78,8 +78,10 @@ class TagCommunicator(
         Log.i(TAG, "Decrypted NFC Data Received: ${decryptedCharacterData.toHexString()}")
         val nfcCharacter = translator.parseNfcCharacter(decryptedCharacterData)
         Log.i(TAG, "Known Character Stats: $nfcCharacter")
-        Log.i(TAG, "Signaling operation complete")
-        nfcData.transceive(translator.getOperationCommandBytes(header, OPERATION_TRANSFERRED_TO_APP))
+        if(confirmReceive.invoke(nfcCharacter)) {
+            Log.i(TAG, "Signaling operation complete")
+            nfcData.transceive(translator.getOperationCommandBytes(header, OPERATION_TRANSFERRED_TO_APP))
+        }
         return nfcCharacter
     }
 
