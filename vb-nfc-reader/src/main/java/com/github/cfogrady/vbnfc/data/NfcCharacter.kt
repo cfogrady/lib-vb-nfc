@@ -1,6 +1,7 @@
 package com.github.cfogrady.vbnfc.data
 
 import java.util.Objects
+import kotlin.experimental.and
 
 abstract class NfcCharacter(
     val dimId: UShort,
@@ -231,8 +232,15 @@ abstract class NfcCharacter(
 
 @OptIn(ExperimentalStdlibApi::class)
 fun Byte.convertFromHexToDec(): UByte {
+    if (this == 0xff.toByte()) {
+        return 0u
+    }
     val result = this.toHexString()
-    return result.toUByte()
+    try {
+        return result.toUByte()
+    } catch (nfe: NumberFormatException) {
+        return 0u
+    }
 }
 
 @OptIn(ExperimentalStdlibApi::class)
