@@ -13,10 +13,32 @@ Create a `keys.xml` file inside `lib-vb-nfc/res/values/keys.xml` with the follow
 ```
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="password1"></string>
-    <string name="password2"></string>
-    <string name="decryptionKey"></string>
-    <integer-array name="substitutionArray">
+    <string name="beKey1"></string>
+    <string name="beKey2"></string>
+    <string name="vbdmKey1"></string>
+    <string name="vbdmKey2"></string>
+    <string name="vbcKey1"></string>
+    <string name="vbcKey2"></string>
+    <string name="aesKey"></string>
+    <integer-array name="beSubstitutionArray">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+    </integer-array>
+    <integer-array name="vbSubstitutionArray">
         <item>0</item>
         <item>1</item>
         <item>2</item>

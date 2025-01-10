@@ -56,6 +56,9 @@ class TagCommunicator(
                     DeviceType.VitalSeriesDeviceType -> {
                         deviceToTranslator[keyValue.key] = VBNfcDataTranslator(keyValue.value)
                     }
+                    DeviceType.VitalCharactersDeviceType -> {
+                        deviceToTranslator[keyValue.key] = VBNfcDataTranslator(keyValue.value)
+                    }
                     else -> {
                         throw IllegalArgumentException("DeviceId ${keyValue.key} Provided Without Known Parser")
                     }

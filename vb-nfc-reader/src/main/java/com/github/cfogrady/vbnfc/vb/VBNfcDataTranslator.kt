@@ -61,7 +61,7 @@ class VBNfcDataTranslator(cryptographicTransformer: CryptographicTransformer, pr
 
     override fun parseHeader(headerBytes: ByteArray): NfcHeader {
         val header = VBNfcHeader(
-            deviceType = DeviceType.VitalSeriesDeviceType,
+            deviceType = headerBytes.getUInt16(4),
             deviceSubType = headerBytes.getUInt16(6),
             vbCompatibleTagIdentifier = headerBytes.sliceArray(0..3), // this is a magic number used to verify that the tag is a VB.
             status = headerBytes[8],

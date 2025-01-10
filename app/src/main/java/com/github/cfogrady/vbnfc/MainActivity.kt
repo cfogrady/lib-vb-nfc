@@ -130,15 +130,15 @@ class MainActivity : ComponentActivity() {
                     aesKey = resources.getString(R.string.aesKey),
                     substitutionCipher = resources.getIntArray(R.array.beSubstitutionArray))),
             Pair(DeviceType.VitalSeriesDeviceType,
-                CryptographicTransformer(readableHmacKey1 = resources.getString(R.string.vbKey1),
-                    readableHmacKey2 = resources.getString(R.string.vbKey2),
+                CryptographicTransformer(readableHmacKey1 = resources.getString(R.string.vbdmKey1),
+                    readableHmacKey2 = resources.getString(R.string.vbdmKey2),
                     aesKey = resources.getString(R.string.aesKey),
                     substitutionCipher = resources.getIntArray(R.array.vbSubstitutionArray))),
-//            Pair(DeviceType.VitalCharactersDeviceType,
-//                CryptographicTransformer(hmacKey1 = resources.getString(R.string.password1),
-//                    hmacKey2 = resources.getString(R.string.password2),
-//                    decryptionKey = resources.getString(R.string.decryptionKey),
-//                    substitutionCipher = resources.getIntArray(R.array.substitutionArray)))
+            Pair(DeviceType.VitalCharactersDeviceType,
+                CryptographicTransformer(readableHmacKey1 = resources.getString(R.string.vbcKey1),
+                    readableHmacKey2 = resources.getString(R.string.vbcKey2),
+                    aesKey = resources.getString(R.string.aesKey),
+                    substitutionCipher = resources.getIntArray(R.array.vbSubstitutionArray)))
         )
     }
 
