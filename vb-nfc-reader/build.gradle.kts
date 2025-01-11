@@ -38,7 +38,7 @@ publishing {
         register<MavenPublication>("ReleaseAar") {
             groupId = "com.github.cfogrady"
             artifactId = "vb-nfc-reader"
-            version = "0.1.0"
+            version = "0.2.0-SNAPSHOT"
 
             afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
         }
