@@ -140,12 +140,6 @@ class TagCommunicator(
     // back to the device.
     @OptIn(ExperimentalStdlibApi::class)
     fun sendCharacter(character: NfcCharacter) {
-        if(character is VBNfcCharacter) {
-            character.specialMissions[0] = SpecialMission.standardMiles()
-            character.specialMissions[1] = SpecialMission.standardVitals()
-            character.specialMissions[2] = SpecialMission.standardBattles()
-            character.specialMissions[3] = SpecialMission.standardWins()
-        }
         Log.i(TAG, "Sending Character: $character")
         val deviceTranslatorAndHeader = fetchDeviceTranslatorAndHeader()
         val translator = deviceTranslatorAndHeader.translator
