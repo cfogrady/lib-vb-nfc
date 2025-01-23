@@ -13,9 +13,9 @@ class BEAppBlockTranslator: BlockTranslator<BENfcCharacter> {
         const val ABILITY_TYPE_IDX = 4
         const val ABILITY_BRANCH_IDX = 6
         const val ABILITY_RESET_IDX = 8
-        const val ITEM_TYPE_IDX = 11
-        const val ITEM_MULTIPLIER_IDX = 12
-        const val ITEM_REMAINING_TIME_IDX = 13
+        const val ITEM_TYPE_IDX = 12
+        const val ITEM_MULTIPLIER_IDX = 13
+        const val ITEM_REMAINING_TIME_IDX = 14
     }
 
     override val startBlock: Int = 18
