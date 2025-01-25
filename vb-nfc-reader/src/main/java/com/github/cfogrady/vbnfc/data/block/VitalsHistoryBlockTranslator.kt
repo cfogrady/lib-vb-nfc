@@ -41,9 +41,14 @@ class VitalsHistoryBlockTranslator<T : NfcCharacter> : BlockTranslator<T> {
         }
 
         for(i in 0..6) {
+            var year = if(years[i] > 0) years[i].convertFromHexToDec().toUInt() else 0u
+            // there are cases where the value could be greater than 0, but it creates an invalid year value, so convertFromHexToDex yields 0 still.
+            if(year > 0u) {
+                year += 2000u
+            }
             val dailyVital = NfcCharacter.DailyVitals(
                 vitals[i],
-                if(years[i] > 0) (years[i].convertFromHexToDec()+2000u).toUShort() else 0u,
+                year.toUShort(),
                 months[i].convertFromHexToDec(),
                 days[i].convertFromHexToDec(),
             )

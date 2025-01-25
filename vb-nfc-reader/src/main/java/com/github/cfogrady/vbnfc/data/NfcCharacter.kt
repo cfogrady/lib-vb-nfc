@@ -1,5 +1,6 @@
 package com.github.cfogrady.vbnfc.data
 
+import android.util.Log
 import java.util.Objects
 import kotlin.experimental.and
 
@@ -239,6 +240,7 @@ fun Byte.convertFromHexToDec(): UByte {
     try {
         return result.toUByte()
     } catch (nfe: NumberFormatException) {
+        Log.i("NfcCharacter", "Got invalid number for part of date: $result. Replaced with 0")
         return 0u
     }
 }
