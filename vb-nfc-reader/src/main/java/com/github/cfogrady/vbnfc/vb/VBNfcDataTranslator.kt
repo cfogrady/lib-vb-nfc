@@ -5,7 +5,6 @@ import com.github.cfogrady.vbnfc.CryptographicTransformer
 import com.github.cfogrady.vbnfc.NfcDataTranslator
 import com.github.cfogrady.vbnfc.TagCommunicator
 import com.github.cfogrady.vbnfc.be.BENfcDataTranslator.Companion.DIM_IDX
-import com.github.cfogrady.vbnfc.data.DeviceType
 import com.github.cfogrady.vbnfc.data.NfcHeader
 import com.github.cfogrady.vbnfc.data.block.AppBlockTranslator
 import com.github.cfogrady.vbnfc.data.block.CharacterTypeBlockTranslator
@@ -61,8 +60,8 @@ class VBNfcDataTranslator(cryptographicTransformer: CryptographicTransformer, pr
 
     override fun parseHeader(headerBytes: ByteArray): NfcHeader {
         val header = VBNfcHeader(
-            deviceType = headerBytes.getUInt16(4),
-            deviceSubType = headerBytes.getUInt16(6),
+            deviceType = headerBytes.getUInt16(4, byteOrder = ByteOrder.BIG_ENDIAN),
+            deviceSubType = headerBytes.getUInt16(6, byteOrder = ByteOrder.BIG_ENDIAN),
             vbCompatibleTagIdentifier = headerBytes.sliceArray(0..3), // this is a magic number used to verify that the tag is a VB.
             status = headerBytes[8],
             dimId = headerBytes[9],
